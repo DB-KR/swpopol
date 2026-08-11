@@ -28,3 +28,15 @@ export function getIncomeCategory(key) {
 export function getExpenseCategory(key) {
   return EXPENSE_CATEGORIES.find((c) => c.key === key) || EXPENSE_CATEGORIES[0];
 }
+
+export const CURRENCIES = [
+  { key: "KRW", label: "원화 (KRW)", symbol: "₩" },
+  { key: "USD", label: "미국달러 (USD)", symbol: "$" },
+  { key: "JPY", label: "일본엔 (JPY)", symbol: "¥" },
+  { key: "EUR", label: "유로 (EUR)", symbol: "€" },
+  { key: "CNY", label: "위안 (CNY)", symbol: "¥" },
+];
+
+export function getCurrency(key) {
+  return CURRENCIES.find((c) => c.key === key) || CURRENCIES[0];
+}

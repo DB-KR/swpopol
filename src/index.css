@@ -208,6 +208,11 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
 .muted { color: var(--ink-soft); }
 .row-actions { display: flex; gap: 4px; justify-content: flex-end; }
 .tag { font-size: 11px; border: 1px solid; border-radius: 3px; padding: 2px 6px; white-space: nowrap; }
+.return-detail { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 2px 12px; margin-top: -6px; border-bottom: 1px dashed var(--line); }
+.return-chip { font-family: 'IBM Plex Mono'; font-size: 11px; background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 3px 9px; display: inline-flex; align-items: center; gap: 4px; color: var(--ink-soft); }
+.return-chip.pos { color: var(--growth-green); border-color: var(--growth-green); }
+.return-chip.neg { color: var(--stamp-red); border-color: var(--stamp-red); }
+.return-chip.strong { font-weight: 600; background: var(--card-bg); }
 @media (max-width: 640px) {
   .ledger-row, .ledger-head { grid-template-columns: 1fr 1fr; }
   .ledger-head { display: none; }

@@ -46,6 +46,10 @@ export function DataProvider({ children }) {
       name: form.name.trim(),
       value: Number(form.value) || 0,
       memo: (form.memo || "").trim(),
+      currency: form.currency || "KRW",
+      buy_price: form.buyPrice === "" || form.buyPrice === undefined ? null : Number(form.buyPrice),
+      sell_price: form.sellPrice === "" || form.sellPrice === undefined ? null : Number(form.sellPrice),
+      buy_fx_rate: form.buyFxRate === "" || form.buyFxRate === undefined ? null : Number(form.buyFxRate),
     });
     if (err) { setError("자산 추가에 실패했어요."); return; }
     await refresh();
@@ -59,6 +63,10 @@ export function DataProvider({ children }) {
         name: form.name.trim(),
         value: Number(form.value) || 0,
         memo: (form.memo || "").trim(),
+        currency: form.currency || "KRW",
+        buy_price: form.buyPrice === "" || form.buyPrice === undefined ? null : Number(form.buyPrice),
+        sell_price: form.sellPrice === "" || form.sellPrice === undefined ? null : Number(form.sellPrice),
+        buy_fx_rate: form.buyFxRate === "" || form.buyFxRate === undefined ? null : Number(form.buyFxRate),
       })
       .eq("id", id);
     if (err) { setError("자산 수정에 실패했어요."); return; }

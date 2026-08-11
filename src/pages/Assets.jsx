@@ -1,14 +1,18 @@
 import React, { useState } from "react";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { Plus, Pencil, Trash2, TrendingUp, TrendingDown } from "lucide-react";
 import { useData } from "../context/DataContext";
 import { getCategory } from "../lib/constants";
-import { formatManwon } from "../lib/format";
+import { formatManwon, formatCurrencyAmount, formatPct, computeAssetReturns } from "../lib/format";
 import { AssetForm } from "../components/forms";
+import { useFxRates } from "../lib/useFxRates";
 
 export default function Assets() {
   const { assets, loading, addAsset, updateAsset, deleteAsset } = useData();
   const [showAdd, setShowAdd] = useState(false);
   const [editingId, setEditingId] = useState(null);
+
+  const foreignCurrencies = assets.map((a) => a.currency).filter((c) => c && c !== "KRW");
+  const { rates: fxRates, loading: fxLoading } = useFxRates(foreignCurrencies);
 
   if (loading) return <div className="loading-screen">불러오는 중…</div>;
 
@@ -49,25 +53,66 @@ export default function Assets() {
                   />
                 </div>
               ) : (
-                <div className="ledger-row" key={a.id}>
-                  <span>
-                    <span className="tag" style={{ color: getCategory(a.category).color, borderColor: getCategory(a.category).color }}>
-                      {getCategory(a.category).label}
+                <React.Fragment key={a.id}>
+                  <div className="ledger-row">
+                    <span>
+                      <span className="tag" style={{ color: getCategory(a.category).color, borderColor: getCategory(a.category).color }}>
+                        {getCategory(a.category).label}
+                      </span>
                     </span>
-                  </span>
-                  <span>{a.name}</span>
-                  <span className="muted">{a.memo || "-"}</span>
-                  <span className="num">{formatManwon(a.value)}</span>
-                  <span className="row-actions">
-                    <button className="icon-btn" onClick={() => setEditingId(a.id)} aria-label="수정"><Pencil size={13} /></button>
-                    <button className="icon-btn" onClick={() => deleteAsset(a.id)} aria-label="삭제"><Trash2 size={13} /></button>
-                  </span>
-                </div>
+                    <span>{a.name}</span>
+                    <span className="muted">{a.memo || "-"}</span>
+                    <span className="num">{formatManwon(a.value)}</span>
+                    <span className="row-actions">
+                      <button className="icon-btn" onClick={() => setEditingId(a.id)} aria-label="수정"><Pencil size={13} /></button>
+                      <button className="icon-btn" onClick={() => deleteAsset(a.id)} aria-label="삭제"><Trash2 size={13} /></button>
+                    </span>
+                  </div>
+                  <AssetReturnDetail asset={a} fxRates={fxRates} fxLoading={fxLoading} />
+                </React.Fragment>
               )
             )}
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+function AssetReturnDetail({ asset, fxRates, fxLoading }) {
+  const r = computeAssetReturns(asset);
+  if (!r) return null;
+
+  const currentFxRate = r.isForeign ? fxRates[asset.currency] : null;
+
+  let fxReturnPct = null;
+  let totalReturnPct = r.priceReturnPct;
+
+  if (r.hasFx && currentFxRate) {
+    fxReturnPct = ((currentFxRate - Number(asset.buy_fx_rate)) / Number(asset.buy_fx_rate)) * 100;
+    totalReturnPct = ((1 + r.priceReturnPct / 100) * (1 + fxReturnPct / 100) - 1) * 100;
+  }
+
+  return (
+    <div className="return-detail">
+      <span className="return-chip">
+        {formatCurrencyAmount(r.buy, asset.currency)} → {formatCurrencyAmount(r.sell, asset.currency)}
+      </span>
+      <span className={`return-chip ${r.priceReturnPct >= 0 ? "pos" : "neg"}`}>
+        {r.priceReturnPct >= 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />} 가격 {formatPct(r.priceReturnPct)}
+      </span>
+      {r.isForeign && (
+        fxReturnPct !== null ? (
+          <span className={`return-chip ${fxReturnPct >= 0 ? "pos" : "neg"}`}>
+            환율 {formatPct(fxReturnPct)} (현재 {currentFxRate.toFixed(1)}원)
+          </span>
+        ) : (
+          <span className="return-chip muted">{fxLoading ? "환율 조회 중…" : "환율 정보 없음"}</span>
+        )
+      )}
+      <span className={`return-chip strong ${totalReturnPct >= 0 ? "pos" : "neg"}`}>
+        총수익률 {formatPct(totalReturnPct)}
+      </span>
     </div>
   );
 }

@@ -1,8 +1,10 @@
--- Supabase SQL Editor에서 이 파일 전체를 붙여넣고 실행하세요.
+-- Supabase SQL Editor에서 이 파일 전체를 복사해 붙여넣고 Run 하세요.
+-- 이 파일은 몇 번을 다시 실행해도 안전합니다 (이미 있는 테이블/컬럼/정책은 건드리지 않아요).
+-- 앞으로 기능이 추가될 때마다 이 파일 전체를 그대로 다시 실행하시면 됩니다.
 
 create extension if not exists "pgcrypto";
 
-create table public.assets (
+create table if not exists public.assets (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
   category text not null,
@@ -12,7 +14,13 @@ create table public.assets (
   created_at timestamptz not null default now()
 );
 
-create table public.snapshots (
+-- 매수가/매도가/환율 컬럼 (없으면 추가, 있으면 건너뜀)
+alter table public.assets add column if not exists currency text not null default 'KRW';
+alter table public.assets add column if not exists buy_price numeric;
+alter table public.assets add column if not exists sell_price numeric;
+alter table public.assets add column if not exists buy_fx_rate numeric;
+
+create table if not exists public.snapshots (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
   month text not null,
@@ -21,7 +29,7 @@ create table public.snapshots (
   unique (user_id, month)
 );
 
-create table public.goals (
+create table if not exists public.goals (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
   label text not null default '자산 목표',
@@ -31,7 +39,8 @@ create table public.goals (
   unique (user_id)
 );
 
-create table public.cashflow (
+-- 더 이상 앱에서 쓰지 않지만(현금흐름은 cashflow_items로 대체됨) 기존 데이터 보존을 위해 남겨둡니다.
+create table if not exists public.cashflow (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
   month text not null,
@@ -41,9 +50,8 @@ create table public.cashflow (
   unique (user_id, month)
 );
 
--- 카테고리별 항목 단위 현금흐름 (월급/생활비/통신비/보험비 등). 위 cashflow 테이블은 더 이상 앱에서 쓰지 않지만
--- 기존 데이터 보존을 위해 그대로 둡니다.
-create table public.cashflow_items (
+-- 카테고리별 항목 단위 현금흐름 (월급/생활비/통신비/보험비 등)
+create table if not exists public.cashflow_items (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
   month text not null,
@@ -61,17 +69,23 @@ alter table public.cashflow enable row level security;
 alter table public.cashflow_items enable row level security;
 
 -- 본인 데이터만 읽고 쓸 수 있도록 제한 (다른 사람은 로그인해도 서로의 데이터를 볼 수 없습니다)
+-- drop 후 다시 만드는 방식이라 몇 번을 재실행해도 안전합니다.
+drop policy if exists "individual access" on public.assets;
 create policy "individual access" on public.assets
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
+drop policy if exists "individual access" on public.snapshots;
 create policy "individual access" on public.snapshots
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
+drop policy if exists "individual access" on public.goals;
 create policy "individual access" on public.goals
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
+drop policy if exists "individual access" on public.cashflow;
 create policy "individual access" on public.cashflow
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
+drop policy if exists "individual access" on public.cashflow_items;
 create policy "individual access" on public.cashflow_items
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
