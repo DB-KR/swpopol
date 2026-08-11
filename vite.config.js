@@ -6,5 +6,5 @@ import react from "@vitejs/plugin-react";
 // 예: 저장소 이름이 "my-portfolio" 라면 base: "/my-portfolio/"
 export default defineConfig({
   plugins: [react()],
-  base: "/portfolio-dashboard/",
+  base: "/swpopol/",
 });
