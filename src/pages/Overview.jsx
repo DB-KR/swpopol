@@ -2,12 +2,12 @@ import React from "react";
 import { TrendingUp, TrendingDown } from "lucide-react";
 import { useData } from "../context/DataContext";
 import { CATEGORIES } from "../lib/constants";
-import { formatManwon, formatPct, currentMonth } from "../lib/format";
+import { formatManwon, formatPct, currentMonth, aggregateCashflowByMonth } from "../lib/format";
 import { useCountUp } from "../lib/useCountUp";
 import { AllocationDonut, HoldingsBar } from "../components/charts";
 
 export default function Overview() {
-  const { assets, snapshots, goal, cashflow, loading, error } = useData();
+  const { assets, snapshots, goal, cashflowItems, loading, error } = useData();
 
   const totalAssets = assets.reduce((s, a) => s + Number(a.value || 0), 0);
   const animatedTotal = useCountUp(totalAssets);
@@ -24,10 +24,10 @@ export default function Overview() {
 
   const goalProgressPct = goal && goal.target_amount > 0 ? (totalAssets / goal.target_amount) * 100 : null;
 
-  const cashflowSorted = [...cashflow].sort((a, b) => a.month.localeCompare(b.month));
+  const monthlyCashflow = aggregateCashflowByMonth(cashflowItems);
   const savingsRate = (() => {
-    if (cashflowSorted.length === 0) return null;
-    const latest = cashflowSorted[cashflowSorted.length - 1];
+    if (monthlyCashflow.length === 0) return null;
+    const latest = monthlyCashflow[monthlyCashflow.length - 1];
     if (!latest.income) return null;
     return ((latest.income - latest.expense) / latest.income) * 100;
   })();

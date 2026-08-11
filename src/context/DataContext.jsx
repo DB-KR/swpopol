@@ -7,7 +7,7 @@ export function DataProvider({ children }) {
   const [assets, setAssets] = useState([]);
   const [snapshots, setSnapshots] = useState([]);
   const [goal, setGoal] = useState(null);
-  const [cashflow, setCashflow] = useState([]);
+  const [cashflowItems, setCashflowItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -18,7 +18,7 @@ export function DataProvider({ children }) {
         supabase.from("assets").select("*").order("created_at", { ascending: true }),
         supabase.from("snapshots").select("*").order("month", { ascending: true }),
         supabase.from("goals").select("*").limit(1).maybeSingle(),
-        supabase.from("cashflow").select("*").order("month", { ascending: true }),
+        supabase.from("cashflow_items").select("*").order("month", { ascending: true }),
       ]);
       if (a.error) throw a.error;
       if (s.error) throw s.error;
@@ -27,7 +27,7 @@ export function DataProvider({ children }) {
       setAssets(a.data || []);
       setSnapshots(s.data || []);
       setGoal(g.data || null);
-      setCashflow(c.data || []);
+      setCashflowItems(c.data || []);
       setError(null);
     } catch (e) {
       setError("데이터를 불러오지 못했어요. 잠시 후 다시 시도해주세요.");
@@ -96,31 +96,45 @@ export function DataProvider({ children }) {
     await refresh();
   }
 
-  async function addCashflow(form) {
-    const { error: err } = await supabase.from("cashflow").upsert(
-      {
-        month: form.month,
-        income: Number(form.income) || 0,
-        expense: Number(form.expense) || 0,
-      },
-      { onConflict: "user_id,month" }
-    );
-    if (err) { setError("현금흐름 기록에 실패했어요."); return; }
+  async function addCashflowItem(form) {
+    const { error: err } = await supabase.from("cashflow_items").insert({
+      month: form.month,
+      type: form.type,
+      category: form.category,
+      amount: Number(form.amount) || 0,
+      memo: (form.memo || "").trim(),
+    });
+    if (err) { setError("현금흐름 항목 추가에 실패했어요."); return; }
     await refresh();
   }
 
-  async function deleteCashflow(id) {
-    const { error: err } = await supabase.from("cashflow").delete().eq("id", id);
-    if (err) { setError("기록 삭제에 실패했어요."); return; }
+  async function updateCashflowItem(id, form) {
+    const { error: err } = await supabase
+      .from("cashflow_items")
+      .update({
+        month: form.month,
+        type: form.type,
+        category: form.category,
+        amount: Number(form.amount) || 0,
+        memo: (form.memo || "").trim(),
+      })
+      .eq("id", id);
+    if (err) { setError("현금흐름 항목 수정에 실패했어요."); return; }
+    await refresh();
+  }
+
+  async function deleteCashflowItem(id) {
+    const { error: err } = await supabase.from("cashflow_items").delete().eq("id", id);
+    if (err) { setError("현금흐름 항목 삭제에 실패했어요."); return; }
     await refresh();
   }
 
   const value = {
-    assets, snapshots, goal, cashflow, loading, error, refresh,
+    assets, snapshots, goal, cashflowItems, loading, error, refresh,
     addAsset, updateAsset, deleteAsset,
     saveSnapshot, deleteSnapshot,
     saveGoal,
-    addCashflow, deleteCashflow,
+    addCashflowItem, updateCashflowItem, deleteCashflowItem,
   };
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;

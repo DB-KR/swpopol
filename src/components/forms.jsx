@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { CATEGORIES } from "../lib/constants";
+import { CATEGORIES, INCOME_CATEGORIES, EXPENSE_CATEGORIES } from "../lib/constants";
 import { currentMonth } from "../lib/format";
 
 export function AssetForm({ initial, onSubmit, onCancel }) {
@@ -91,17 +91,29 @@ export function GoalForm({ initial, onSubmit, onCancel }) {
   );
 }
 
-export function CashflowForm({ initial, onSubmit, onCancel }) {
+export function CashflowItemForm({ initial, onSubmit, onCancel }) {
+  const [type, setType] = useState(initial?.type || "expense");
+  const [category, setCategory] = useState(
+    initial?.category || (initial?.type === "income" ? INCOME_CATEGORIES[0].key : EXPENSE_CATEGORIES[0].key)
+  );
   const [month, setMonth] = useState(initial?.month || currentMonth());
-  const [income, setIncome] = useState(initial?.income ?? "");
-  const [expense, setExpense] = useState(initial?.expense ?? "");
+  const [amount, setAmount] = useState(initial?.amount ?? "");
+  const [memo, setMemo] = useState(initial?.memo || "");
   const [saving, setSaving] = useState(false);
+
+  const categoryOptions = type === "income" ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
+
+  function handleTypeChange(next) {
+    setType(next);
+    const opts = next === "income" ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
+    setCategory(opts[0].key);
+  }
 
   async function submit(e) {
     e.preventDefault();
-    if (!month || income === "" || expense === "") return;
+    if (!month || amount === "") return;
     setSaving(true);
-    await onSubmit({ month, income, expense });
+    await onSubmit({ type, category, month, amount, memo });
     setSaving(false);
   }
 
@@ -109,21 +121,38 @@ export function CashflowForm({ initial, onSubmit, onCancel }) {
     <form className="ledger-form" onSubmit={submit}>
       <div className="form-row">
         <label>
+          구분
+          <select value={type} onChange={(e) => handleTypeChange(e.target.value)}>
+            <option value="income">수입</option>
+            <option value="expense">지출</option>
+          </select>
+        </label>
+        <label>
+          카테고리
+          <select value={category} onChange={(e) => setCategory(e.target.value)}>
+            {categoryOptions.map((c) => (
+              <option key={c.key} value={c.key}>{c.label}</option>
+            ))}
+          </select>
+        </label>
+        <label>
           월
           <input type="month" value={month} onChange={(e) => setMonth(e.target.value)} required />
         </label>
+      </div>
+      <div className="form-row">
         <label>
-          수입 (만원)
-          <input type="number" value={income} onChange={(e) => setIncome(e.target.value)} placeholder="예: 400" min="0" required />
+          금액 (만원)
+          <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="예: 80" min="0" required />
         </label>
         <label>
-          지출 (만원)
-          <input type="number" value={expense} onChange={(e) => setExpense(e.target.value)} placeholder="예: 280" min="0" required />
+          메모 (선택)
+          <input type="text" value={memo} onChange={(e) => setMemo(e.target.value)} placeholder="예: OO통신, OO보험" />
         </label>
       </div>
       <div className="form-actions">
         <button type="button" className="btn-ghost" onClick={onCancel}>취소</button>
-        <button type="submit" className="btn-primary" disabled={saving}>기록 저장</button>
+        <button type="submit" className="btn-primary" disabled={saving}>{initial ? "수정 완료" : "항목 추가"}</button>
       </div>
     </form>
   );

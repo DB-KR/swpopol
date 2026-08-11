@@ -201,3 +201,53 @@ export function CashflowChart({ data }) {
     </ResponsiveContainer>
   );
 }
+
+export function ExpenseBreakdown({ allocation }) {
+  if (allocation.length === 0) {
+    return (
+      <div className="empty-state">
+        <div className="empty-ring" />
+        <p>이번 달 지출 항목이 없어요.</p>
+      </div>
+    );
+  }
+  const total = allocation.reduce((s, c) => s + c.value, 0);
+  return (
+    <div className="donut-wrap">
+      <div className="donut-chart">
+        <ResponsiveContainer width="100%" height={200}>
+          <PieChart>
+            <Pie
+              data={allocation}
+              dataKey="value"
+              nameKey="label"
+              innerRadius={56}
+              outerRadius={82}
+              paddingAngle={3}
+              stroke="none"
+              animationDuration={700}
+              animationEasing="ease-out"
+            >
+              {allocation.map((c) => <Cell key={c.key} fill={c.color} />)}
+            </Pie>
+            <Tooltip content={<PieTooltip />} />
+          </PieChart>
+        </ResponsiveContainer>
+        <div className="donut-center">
+          <span className="donut-center-label">이번 달 지출</span>
+          <span className="donut-center-value">{formatManwon(total)}</span>
+        </div>
+      </div>
+      <div className="legend">
+        {allocation.map((c) => (
+          <div className="legend-row" key={c.key}>
+            <span className="legend-dot" style={{ background: c.color }} />
+            <span className="legend-label">{c.label}</span>
+            <span className="legend-fill" />
+            <span className="legend-value">{formatManwon(c.value)}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
