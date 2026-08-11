@@ -1,0 +1,9 @@
+{
+  "name": "MY 자산 통장",
+  "short_name": "자산통장",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#EEF0E7",
+  "theme_color": "#1B2A41",
+  "icons": []
+}
