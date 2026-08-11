@@ -197,7 +197,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
 .goal-days { font-family: 'IBM Plex Mono'; color: var(--ink-soft); }
 .progress-track { position: relative; height: 14px; background: var(--paper); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
 .progress-fill { height: 100%; background: var(--ink); transition: width 0.4s ease; }
-.progress-tick { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--card-bg); opacity: 0.6; }
+.progress-tick { position: absolute; top: 0; bottom: 0; width: 1px; background: rgba(0, 0, 0, 0.14); }
 .goal-nums { display: flex; justify-content: space-between; font-family: 'IBM Plex Mono'; font-size: 13px; }
 
 .goal-split { display: flex; gap: 24px; flex-wrap: wrap; margin: 4px 0 2px; }
@@ -217,7 +217,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
 .gauge-pct { font-family: 'IBM Plex Mono'; font-size: 30px; font-weight: 700; line-height: 1; }
 .gauge-track { position: relative; height: 22px; background: var(--paper); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
 .gauge-segment { position: absolute; top: 0; bottom: 0; transition: width 0.6s ease, left 0.6s ease; }
-.gauge-tick { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--card-bg); opacity: 0.6; z-index: 1; }
+.gauge-tick { position: absolute; top: 0; bottom: 0; width: 1px; background: rgba(0, 0, 0, 0.14); z-index: 1; }
 .gauge-legend { display: flex; flex-wrap: wrap; gap: 12px; }
 .gauge-legend-item { display: inline-flex; align-items: center; gap: 5px; font-family: 'IBM Plex Mono'; font-size: 11px; color: var(--ink-soft); }
 .gauge-legend-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
