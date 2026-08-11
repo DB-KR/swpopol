@@ -5,7 +5,7 @@ import {
   BarChart, Bar,
 } from "recharts";
 import { formatManwon, formatMonthLabel } from "../lib/format";
-import { getCategory } from "../lib/constants";
+import { getCategory, getYearColor } from "../lib/constants";
 
 function PieTooltip({ active, payload }) {
   if (!active || !payload || !payload.length) return null;
@@ -175,6 +175,42 @@ export function TrendArea({ data }) {
           activeDot={{ r: 6 }}
         />
       </AreaChart>
+    </ResponsiveContainer>
+  );
+}
+
+function YearlyTooltip({ active, payload, label }) {
+  if (!active || !payload || !payload.length) return null;
+  const d = payload[0].payload;
+  return (
+    <div className="chart-tt">
+      <div className="chart-tt-label">{label}년</div>
+      <div className="chart-tt-row"><span>달성률</span><span>{d.pct.toFixed(1)}%</span></div>
+      <div className="chart-tt-row"><span>연말 자산</span><span>{formatManwon(d.total)}</span></div>
+    </div>
+  );
+}
+
+export function YearlyGoalChart({ data }) {
+  if (data.length === 0) {
+    return (
+      <div className="empty-state">
+        <div className="empty-ring" />
+        <p>스냅샷 기록이 쌓이면 연도별 달성률이 표시돼요.</p>
+      </div>
+    );
+  }
+  return (
+    <ResponsiveContainer width="100%" height={220}>
+      <BarChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+        <CartesianGrid strokeDasharray="2 4" stroke="var(--line)" vertical={false} />
+        <XAxis dataKey="year" tick={{ fontFamily: "IBM Plex Mono", fontSize: 12, fill: "var(--ink-soft)" }} axisLine={{ stroke: "var(--line)" }} tickLine={false} />
+        <YAxis tickFormatter={(v) => `${v}%`} width={48} tick={{ fontFamily: "IBM Plex Mono", fontSize: 10, fill: "var(--ink-soft)" }} axisLine={false} tickLine={false} />
+        <Tooltip content={<YearlyTooltip />} cursor={{ fill: "var(--paper)" }} />
+        <Bar dataKey="pct" radius={[4, 4, 0, 0]} animationDuration={700} animationEasing="ease-out">
+          {data.map((d, i) => <Cell key={d.year} fill={getYearColor(i)} />)}
+        </Bar>
+      </BarChart>
     </ResponsiveContainer>
   );
 }

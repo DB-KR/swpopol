@@ -209,6 +209,24 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
 .gauge-tick { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--card-bg); opacity: 0.6; }
 .gauge-foot { display: flex; justify-content: space-between; font-family: 'IBM Plex Mono'; font-size: 11px; color: var(--ink-soft); }
 
+/* Milestone stepper */
+.milestones { display: flex; flex-wrap: wrap; align-items: flex-start; padding-top: 4px; }
+.milestone { display: flex; flex-direction: column; align-items: center; flex: 1; min-width: 90px; position: relative; padding: 0 4px; }
+.milestone::before { content: ""; position: absolute; top: 14px; left: -50%; width: 100%; height: 2px; background: var(--line); z-index: 0; }
+.milestone:first-child::before { display: none; }
+.milestone.done::before { background: var(--growth-green); }
+.milestone-dot { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--line); background: var(--card-bg); display: flex; align-items: center; justify-content: center; font-family: 'IBM Plex Mono'; font-size: 12px; color: var(--ink-soft); z-index: 1; margin-bottom: 8px; }
+.milestone.done .milestone-dot { border-color: var(--growth-green); background: var(--growth-green); color: #fff; }
+.milestone-amount { font-family: 'IBM Plex Mono'; font-size: 12px; font-weight: 600; text-align: center; }
+.milestone-remain { font-size: 10px; color: var(--ink-soft); margin-top: 2px; text-align: center; }
+@media (max-width: 640px) {
+  .milestones { flex-direction: column; gap: 14px; }
+  .milestone { flex-direction: row; justify-content: flex-start; gap: 10px; min-width: 0; }
+  .milestone::before { display: none; }
+  .milestone-dot { margin-bottom: 0; }
+  .milestone-amount, .milestone-remain { text-align: left; }
+}
+
 /* Ledger table */
 .ledger-table { display: flex; flex-direction: column; }
 .ledger-row { display: grid; grid-template-columns: 110px 1fr 1fr 130px 60px; align-items: center; gap: 8px; padding: 10px 2px; border-bottom: 1px dashed var(--line); font-size: 13px; }

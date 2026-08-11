@@ -67,3 +67,20 @@ export function computeAssetReturns(asset) {
     isForeign,
   };
 }
+
+// 스냅샷 기록을 연도별로 묶어, 각 연도의 마지막 기록을 기준으로 목표 대비 달성률(%)을 계산합니다.
+export function computeYearlyGoalProgress(snapshots, targetAmount) {
+  if (!targetAmount || targetAmount <= 0) return [];
+  const byYear = {};
+  snapshots.forEach((s) => {
+    const year = s.month.slice(0, 4);
+    if (!byYear[year] || s.month > byYear[year].month) byYear[year] = s;
+  });
+  return Object.keys(byYear)
+    .sort()
+    .map((year) => ({
+      year,
+      total: byYear[year].total,
+      pct: (byYear[year].total / targetAmount) * 100,
+    }));
+}

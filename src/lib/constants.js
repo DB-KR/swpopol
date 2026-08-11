@@ -40,3 +40,12 @@ export const CURRENCIES = [
 export function getCurrency(key) {
   return CURRENCIES.find((c) => c.key === key) || CURRENCIES[0];
 }
+
+export const YEAR_COLORS = ["#2F6F4E", "#1B2A41", "#B23A2F", "#B08D57", "#5B6472", "#6B8F71"];
+
+export function getYearColor(index) {
+  return YEAR_COLORS[index % YEAR_COLORS.length];
+}
+
+// 자산 마일스톤 (만원 단위): 1억, 3억, 5억, 10억, 20억
+export const ASSET_MILESTONES = [10000, 30000, 50000, 100000, 200000];

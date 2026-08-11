@@ -1,12 +1,12 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { TrendingUp, TrendingDown, Target } from "lucide-react";
+import { TrendingUp, TrendingDown, Target, Check } from "lucide-react";
 import { useData } from "../context/DataContext";
-import { CATEGORIES } from "../lib/constants";
-import { formatManwon, formatPct, currentMonth, aggregateCashflowByMonth } from "../lib/format";
+import { CATEGORIES, ASSET_MILESTONES } from "../lib/constants";
+import { formatManwon, formatPct, currentMonth, aggregateCashflowByMonth, computeYearlyGoalProgress } from "../lib/format";
 import { useCountUp } from "../lib/useCountUp";
 import { useFxRates } from "../lib/useFxRates";
-import { AllocationDonut, HoldingsBar } from "../components/charts";
+import { AllocationDonut, HoldingsBar, YearlyGoalChart } from "../components/charts";
 
 export default function Overview() {
   const { assets, snapshots, goal, cashflowItems, loading, error } = useData();
@@ -27,6 +27,7 @@ export default function Overview() {
 
   const goalProgressPct = goal && goal.target_amount > 0 ? (totalAssets / goal.target_amount) * 100 : null;
   const goalRemaining = goal && goal.target_amount > 0 ? Math.max(0, goal.target_amount - totalAssets) : null;
+  const yearlyProgress = computeYearlyGoalProgress(snapshots, goal?.target_amount);
 
   const monthlyCashflow = aggregateCashflowByMonth(cashflowItems);
   const savingsRate = (() => {
@@ -101,6 +102,40 @@ export default function Overview() {
               <span>{formatManwon(goal.target_amount)}</span>
             </div>
           </div>
+        )}
+      </div>
+
+      <div className="card">
+        <div className="card-head">
+          <h2>자산 마일스톤</h2>
+          <span className="card-sub">구간별 달성 현황</span>
+        </div>
+        <div className="milestones">
+          {ASSET_MILESTONES.map((m, i) => {
+            const achieved = totalAssets >= m;
+            return (
+              <div className={`milestone ${achieved ? "done" : ""}`} key={m}>
+                <div className="milestone-dot">{achieved ? <Check size={14} /> : i + 1}</div>
+                <span className="milestone-amount">{formatManwon(m)}</span>
+                {!achieved && <span className="milestone-remain">{formatManwon(m - totalAssets)} 남음</span>}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="card">
+        <div className="card-head">
+          <h2>연도별 목표 달성률</h2>
+          <span className="card-sub">연말 기준 스냅샷 대비</span>
+        </div>
+        {!goal ? (
+          <div className="empty-state">
+            <div className="empty-ring" />
+            <p>목표를 설정하면 연도별 달성률이 표시돼요.</p>
+          </div>
+        ) : (
+          <YearlyGoalChart data={yearlyProgress} />
         )}
       </div>
 
