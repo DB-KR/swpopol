@@ -40,6 +40,10 @@ create table if not exists public.goals (
   unique (user_id)
 );
 
+-- 부동산/금융자산 목표를 따로 설정할 수 있도록 분리 (target_amount는 더 이상 앱에서 쓰지 않지만 남겨둡니다)
+alter table public.goals add column if not exists real_estate_target numeric not null default 0;
+alter table public.goals add column if not exists financial_target numeric not null default 0;
+
 -- 더 이상 앱에서 쓰지 않지만(현금흐름은 cashflow_items로 대체됨) 기존 데이터 보존을 위해 남겨둡니다.
 create table if not exists public.cashflow (
   id uuid primary key default gen_random_uuid(),

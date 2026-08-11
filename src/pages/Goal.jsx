@@ -22,10 +22,13 @@ export default function Goal() {
     .reduce((s, a) => s + Number(a.value || 0), 0);
   const totalAssets = realEstateTotal + financialTotal;
 
-  const target = goal?.target_amount || 0;
-  const overallPct = target > 0 ? (totalAssets / target) * 100 : null;
-  const realEstatePct = target > 0 ? (realEstateTotal / target) * 100 : null;
-  const financialPct = target > 0 ? (financialTotal / target) * 100 : null;
+  const realEstateTarget = goal?.real_estate_target || 0;
+  const financialTarget = goal?.financial_target || 0;
+  const combinedTarget = realEstateTarget + financialTarget;
+
+  const overallPct = combinedTarget > 0 ? (totalAssets / combinedTarget) * 100 : null;
+  const realEstatePct = realEstateTarget > 0 ? (realEstateTotal / realEstateTarget) * 100 : null;
+  const financialPct = financialTarget > 0 ? (financialTotal / financialTarget) * 100 : null;
 
   const daysLeft = goal && goal.target_date ? Math.ceil((new Date(goal.target_date) - new Date()) / 86400000) : null;
 
@@ -71,7 +74,7 @@ export default function Goal() {
                 <div className="progress-track">
                   <div className="progress-fill" style={{ width: `${Math.min(100, realEstatePct || 0)}%`, background: realEstateColor }} />
                 </div>
-                <div className="goal-split-amt">{formatManwon(realEstateTotal)} / {formatManwon(target)}</div>
+                <div className="goal-split-amt">{formatManwon(realEstateTotal)} / {formatManwon(realEstateTarget)}</div>
               </div>
 
               <div className="goal-split-item">
@@ -84,12 +87,12 @@ export default function Goal() {
                 <div className="progress-track">
                   <div className="progress-fill" style={{ width: `${Math.min(100, financialPct || 0)}%`, background: FINANCIAL_COLOR }} />
                 </div>
-                <div className="goal-split-amt">{formatManwon(financialTotal)} / {formatManwon(target)}</div>
+                <div className="goal-split-amt">{formatManwon(financialTotal)} / {formatManwon(financialTarget)}</div>
               </div>
             </div>
 
             <div className="goal-nums">
-              <span>합계 {formatManwon(totalAssets)} / {formatManwon(target)}</span>
+              <span>합계 {formatManwon(totalAssets)} / {formatManwon(combinedTarget)}</span>
               <span className={(overallPct || 0) >= 100 ? "pos" : ""}>{(overallPct || 0).toFixed(1)}%</span>
             </div>
             {(overallPct || 0) >= 100 && <Stamp text="목표 달성" />}

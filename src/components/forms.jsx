@@ -114,15 +114,16 @@ export function AssetForm({ initial, onSubmit, onCancel }) {
 
 export function GoalForm({ initial, onSubmit, onCancel }) {
   const [label, setLabel] = useState(initial?.label || "");
-  const [targetAmount, setTargetAmount] = useState(initial?.target_amount ?? "");
+  const [realEstateTarget, setRealEstateTarget] = useState(initial?.real_estate_target ?? "");
+  const [financialTarget, setFinancialTarget] = useState(initial?.financial_target ?? "");
   const [targetDate, setTargetDate] = useState(initial?.target_date || "");
   const [saving, setSaving] = useState(false);
 
   async function submit(e) {
     e.preventDefault();
-    if (targetAmount === "" || !targetDate) return;
+    if ((realEstateTarget === "" && financialTarget === "") || !targetDate) return;
     setSaving(true);
-    await onSubmit({ label, targetAmount, targetDate });
+    await onSubmit({ label, realEstateTarget, financialTarget, targetDate });
     setSaving(false);
   }
 
@@ -134,14 +135,18 @@ export function GoalForm({ initial, onSubmit, onCancel }) {
           <input type="text" value={label} onChange={(e) => setLabel(e.target.value)} placeholder="예: 내 집 마련" />
         </label>
         <label>
-          목표 금액 (만원)
-          <input type="number" value={targetAmount} onChange={(e) => setTargetAmount(e.target.value)} placeholder="예: 50000" min="0" required />
+          목표 날짜
+          <input type="date" value={targetDate} onChange={(e) => setTargetDate(e.target.value)} required />
         </label>
       </div>
       <div className="form-row">
         <label>
-          목표 날짜
-          <input type="date" value={targetDate} onChange={(e) => setTargetDate(e.target.value)} required />
+          부동산 목표 금액 (만원)
+          <input type="number" value={realEstateTarget} onChange={(e) => setRealEstateTarget(e.target.value)} placeholder="예: 100000" min="0" />
+        </label>
+        <label>
+          금융자산 목표 금액 (만원)
+          <input type="number" value={financialTarget} onChange={(e) => setFinancialTarget(e.target.value)} placeholder="예: 100000" min="0" />
         </label>
       </div>
       <div className="form-actions">

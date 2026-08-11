@@ -25,9 +25,10 @@ export default function Overview() {
     return ((totalAssets - base) / base) * 100;
   })();
 
-  const goalProgressPct = goal && goal.target_amount > 0 ? (totalAssets / goal.target_amount) * 100 : null;
-  const goalRemaining = goal && goal.target_amount > 0 ? Math.max(0, goal.target_amount - totalAssets) : null;
-  const gaugeSegments = goal ? computeGaugeSegments(snapshots, goal.target_amount, totalAssets, getYearColor) : [];
+  const combinedTarget = goal ? (goal.real_estate_target || 0) + (goal.financial_target || 0) : 0;
+  const goalProgressPct = combinedTarget > 0 ? (totalAssets / combinedTarget) * 100 : null;
+  const goalRemaining = combinedTarget > 0 ? Math.max(0, combinedTarget - totalAssets) : null;
+  const gaugeSegments = goal ? computeGaugeSegments(snapshots, combinedTarget, totalAssets, getYearColor) : [];
 
   const monthlyCashflow = aggregateCashflowByMonth(cashflowItems);
   const savingsRate = (() => {
@@ -89,7 +90,7 @@ export default function Overview() {
         ) : (
           <div className="gauge">
             <div className="gauge-head">
-              <span className="gauge-label">{formatManwon(totalAssets)} / {formatManwon(goal.target_amount)}</span>
+              <span className="gauge-label">{formatManwon(totalAssets)} / {formatManwon(combinedTarget)}</span>
               <span className={`gauge-pct ${(goalProgressPct || 0) >= 100 ? "pos" : ""}`}>{(goalProgressPct || 0).toFixed(1)}%</span>
             </div>
             <div className="gauge-track">
@@ -114,7 +115,7 @@ export default function Overview() {
             <div className="gauge-foot">
               <span>0원</span>
               <span>{goalRemaining > 0 ? `목표까지 ${formatManwon(goalRemaining)} 남음` : "목표 달성!"}</span>
-              <span>{formatManwon(goal.target_amount)}</span>
+              <span>{formatManwon(combinedTarget)}</span>
             </div>
           </div>
         )}

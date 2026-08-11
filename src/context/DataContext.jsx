@@ -98,7 +98,8 @@ export function DataProvider({ children }) {
   async function saveGoal(form) {
     const payload = {
       label: (form.label || "").trim() || "자산 목표",
-      target_amount: Number(form.targetAmount) || 0,
+      real_estate_target: form.realEstateTarget === "" ? 0 : Number(form.realEstateTarget) || 0,
+      financial_target: form.financialTarget === "" ? 0 : Number(form.financialTarget) || 0,
       target_date: form.targetDate,
     };
     const { error: err } = await supabase.from("goals").upsert(payload, { onConflict: "user_id" });
