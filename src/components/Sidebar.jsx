@@ -1,7 +1,7 @@
 import React from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { LayoutDashboard, TrendingUp, Target, Wallet, List, LogOut, X } from "lucide-react";
+import { LayoutDashboard, TrendingUp, Target, Wallet, List, Settings as SettingsIcon, LogOut, X } from "lucide-react";
 
 const MENU = [
   { to: "/", label: "개요", icon: LayoutDashboard },
@@ -9,6 +9,7 @@ const MENU = [
   { to: "/goal", label: "목표", icon: Target },
   { to: "/cashflow", label: "현금흐름", icon: Wallet },
   { to: "/assets", label: "자산 내역", icon: List },
+  { to: "/settings", label: "설정", icon: SettingsIcon },
 ];
 
 export default function Sidebar({ open, onClose, onLogout, userEmail }) {

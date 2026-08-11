@@ -107,6 +107,7 @@ a { color: inherit; }
 /* Loading / error */
 .loading-screen { text-align: center; padding: 80px 0; font-family: 'IBM Plex Mono'; color: var(--ink-soft); }
 .error-banner { background: #F6E4E1; border: 1px solid var(--stamp-red); color: var(--stamp-red); padding: 10px 14px; border-radius: 4px; font-size: 13px; }
+.success-banner { background: #E3F0E8; border: 1px solid var(--growth-green); color: var(--growth-green); padding: 10px 14px; border-radius: 4px; font-size: 13px; }
 
 /* Login */
 .login-screen { min-height: 100%; display: flex; align-items: center; justify-content: center; padding: 24px; }
@@ -116,6 +117,7 @@ a { color: inherit; }
 .login-form { display: flex; flex-direction: column; gap: 10px; }
 .login-form input { font-size: 14px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 4px; background: var(--paper); color: var(--ink); }
 .login-sent { font-size: 13px; background: var(--paper); border: 1px dashed var(--line); border-radius: 4px; padding: 12px; }
+.login-switch { margin-top: 6px; align-self: flex-start; }
 
 /* Header / hero */
 .hero { background: var(--card-bg); border: 1px solid var(--line); border-radius: 6px; padding: 22px 26px 24px; position: relative; overflow: hidden; }

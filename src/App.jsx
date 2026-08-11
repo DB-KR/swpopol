@@ -11,6 +11,7 @@ import Trend from "./pages/Trend";
 import Goal from "./pages/Goal";
 import Cashflow from "./pages/Cashflow";
 import Assets from "./pages/Assets";
+import Settings from "./pages/Settings";
 
 function PageWrap({ children }) {
   return (
@@ -35,6 +36,7 @@ function AnimatedRoutes() {
         <Route path="/goal" element={<PageWrap><Goal /></PageWrap>} />
         <Route path="/cashflow" element={<PageWrap><Cashflow /></PageWrap>} />
         <Route path="/assets" element={<PageWrap><Assets /></PageWrap>} />
+        <Route path="/settings" element={<PageWrap><Settings /></PageWrap>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </AnimatePresence>
