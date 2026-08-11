@@ -1,12 +1,13 @@
-import React from "react";
-import { Link } from "react-router-dom";
-import { TrendingUp, TrendingDown, Target, Check } from "lucide-react";
+import React, { useState } from "react";
+import { TrendingUp, TrendingDown, Target, Check, Pencil, Plus, Trash2 } from "lucide-react";
 import { useData } from "../context/DataContext";
 import { CATEGORIES, ASSET_MILESTONES, getYearColor } from "../lib/constants";
-import { formatManwon, formatPct, currentMonth, aggregateCashflowByMonth, computeGaugeSegments } from "../lib/format";
+import { formatManwon, formatMonthLabel, formatPct, currentMonth, aggregateCashflowByMonth, computeGaugeSegments } from "../lib/format";
 import { useCountUp } from "../lib/useCountUp";
 import { useFxRates } from "../lib/useFxRates";
-import { AllocationDonut, HoldingsBar } from "../components/charts";
+import { AllocationDonut, HoldingsBar, TrendArea } from "../components/charts";
+import { GoalForm, SnapshotForm } from "../components/forms";
+import Stamp from "../components/Stamp";
 
 function GaugeBlock({ label, total, target, segments }) {
   const pct = target > 0 ? (total / target) * 100 : null;
@@ -47,8 +48,11 @@ function GaugeBlock({ label, total, target, segments }) {
 }
 
 export default function Overview() {
-  const { assets, snapshots, goal, cashflowItems, loading, error } = useData();
+  const { assets, snapshots, goal, cashflowItems, loading, error, saveGoal, saveSnapshot, deleteSnapshot } = useData();
   const { rates: fxRates } = useFxRates(["USD"]);
+  const [showGoalForm, setShowGoalForm] = useState(false);
+  const [showSnapshotForm, setShowSnapshotForm] = useState(false);
+  const [justSnapshotted, setJustSnapshotted] = useState(false);
 
   const realEstateTotal = assets.filter((a) => a.category === "realestate").reduce((s, a) => s + Number(a.value || 0), 0);
   const totalAssets = assets.reduce((s, a) => s + Number(a.value || 0), 0);
@@ -56,6 +60,7 @@ export default function Overview() {
   const animatedTotal = useCountUp(totalAssets);
 
   const trendData = [...snapshots].sort((a, b) => a.month.localeCompare(b.month));
+  const hasSnapshotThisMonth = trendData.some((s) => s.month === currentMonth());
   const momChangePct = (() => {
     if (trendData.length === 0) return null;
     const cm = currentMonth();
@@ -65,6 +70,7 @@ export default function Overview() {
     return ((totalAssets - base) / base) * 100;
   })();
 
+  const daysLeft = goal && goal.target_date ? Math.ceil((new Date(goal.target_date) - new Date()) / 86400000) : null;
   const realEstateTarget = goal?.real_estate_target || 0;
   const financialTarget = goal?.financial_target || 0;
   const realEstateSegments = computeGaugeSegments(snapshots, realEstateTarget, realEstateTotal, getYearColor, "real_estate_total");
@@ -84,6 +90,12 @@ export default function Overview() {
   const allocation = CATEGORIES
     .map((c) => ({ ...c, value: sums[c.key] || 0, pct: allocTotal > 0 ? ((sums[c.key] || 0) / allocTotal) * 100 : 0 }))
     .filter((c) => c.value > 0);
+
+  async function handleQuickSnapshot() {
+    await saveSnapshot(currentMonth(), totalAssets, realEstateTotal, financialTotal);
+    setJustSnapshotted(true);
+    setTimeout(() => setJustSnapshotted(false), 1800);
+  }
 
   if (loading) return <div className="loading-screen">불러오는 중…</div>;
 
@@ -118,19 +130,73 @@ export default function Overview() {
       <div className="card">
         <div className="card-head">
           <h2>목표 자산 도달률</h2>
-          <span className="card-sub">{goal ? goal.label : ""}</span>
+          {goal && (
+            <span className="card-sub">
+              {goal.label}
+              {daysLeft !== null && ` · ${daysLeft >= 0 ? `D-${daysLeft}` : `${Math.abs(daysLeft)}일 지남`}`}
+            </span>
+          )}
+          {goal && !showGoalForm && (
+            <button className="link-btn" onClick={() => setShowGoalForm(true)}><Pencil size={12} /> 수정</button>
+          )}
         </div>
 
         {!goal ? (
-          <div className="empty-state">
-            <div className="empty-ring"><Target size={20} /></div>
-            <p>목표를 설정하면 도달률이 여기 표시돼요.</p>
-            <Link to="/goal" className="btn-primary">목표 설정하러 가기</Link>
-          </div>
+          showGoalForm ? (
+            <GoalForm onSubmit={async (f) => { await saveGoal(f); setShowGoalForm(false); }} onCancel={() => setShowGoalForm(false)} />
+          ) : (
+            <div className="empty-state">
+              <div className="empty-ring"><Target size={20} /></div>
+              <p>목표를 설정하면 도달률이 여기 표시돼요.</p>
+              <button className="btn-primary" onClick={() => setShowGoalForm(true)}><Plus size={14} /> 목표 설정하기</button>
+            </div>
+          )
+        ) : showGoalForm ? (
+          <GoalForm initial={goal} onSubmit={async (f) => { await saveGoal(f); setShowGoalForm(false); }} onCancel={() => setShowGoalForm(false)} />
         ) : (
           <div className="gauge-group">
             <GaugeBlock label="부동산" total={realEstateTotal} target={realEstateTarget} segments={realEstateSegments} />
             <GaugeBlock label="금융자산" total={financialTotal} target={financialTarget} segments={financialSegments} />
+          </div>
+        )}
+      </div>
+
+      <div className="card">
+        <div className="card-head">
+          <h2>자산 증감 추이</h2>
+          <span className="card-sub">스냅샷을 기록하면 위 게이지의 연도별 색상에도 반영돼요</span>
+        </div>
+
+        <TrendArea data={trendData} />
+
+        <div className="snapshot-actions">
+          <button className="btn-primary" onClick={handleQuickSnapshot}>
+            <Plus size={14} /> {hasSnapshotThisMonth ? "이번 달 스냅샷 업데이트" : "이번 달 스냅샷 기록"}
+          </button>
+          <button className="btn-ghost" onClick={() => setShowSnapshotForm((v) => !v)}>다른 달 기록</button>
+          {justSnapshotted && <Stamp text="기록완료" />}
+        </div>
+
+        {showSnapshotForm && (
+          <SnapshotForm
+            defaultRealEstate={realEstateTotal}
+            defaultFinancial={financialTotal}
+            onSubmit={async (m, t, re, fi) => { await saveSnapshot(m, t, re, fi); setShowSnapshotForm(false); }}
+            onCancel={() => setShowSnapshotForm(false)}
+          />
+        )}
+
+        {trendData.length > 0 && (
+          <div className="mini-list">
+            {[...trendData].reverse().map((s) => (
+              <div className="mini-list-row" key={s.month}>
+                <span>{formatMonthLabel(s.month)}</span>
+                <span>{formatManwon(s.total)}</span>
+                <button className="icon-btn" onClick={() => deleteSnapshot(s.month)} aria-label="스냅샷 삭제">
+                  <Trash2 size={13} />
+                </button>
+              </div>
+            ))}
           </div>
         )}
       </div>

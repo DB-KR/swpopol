@@ -20,7 +20,7 @@ export default function Assets() {
     <div className="page">
       <div className="card">
         <div className="card-head">
-          <h2>자산 내역</h2>
+          <h2>자산 구성</h2>
           {!showAdd && (
             <button className="btn-primary" onClick={() => setShowAdd(true)}><Plus size={14} /> 자산 추가</button>
           )}

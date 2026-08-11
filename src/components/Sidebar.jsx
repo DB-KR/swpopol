@@ -1,15 +1,31 @@
 import React from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { LayoutDashboard, TrendingUp, Target, Wallet, List, Settings as SettingsIcon, LogOut, X } from "lucide-react";
+import { LayoutDashboard, ClipboardList, Wallet, Briefcase, Scale, LineChart, Settings as SettingsIcon, LogOut, X } from "lucide-react";
 
-const MENU = [
-  { to: "/", label: "개요", icon: LayoutDashboard },
-  { to: "/trend", label: "자산 증감 추이", icon: TrendingUp },
-  { to: "/goal", label: "목표", icon: Target },
-  { to: "/cashflow", label: "현금흐름", icon: Wallet },
-  { to: "/assets", label: "자산 내역", icon: List },
-  { to: "/settings", label: "설정", icon: SettingsIcon },
+const MENU_GROUPS = [
+  {
+    label: "전체 자산",
+    items: [
+      { to: "/", label: "개요", icon: LayoutDashboard },
+      { to: "/assets", label: "자산 구성", icon: ClipboardList },
+      { to: "/cashflow", label: "현금 흐름", icon: Wallet },
+    ],
+  },
+  {
+    label: "투자 관리",
+    items: [
+      { to: "/holdings", label: "주식 포트폴리오", icon: Briefcase },
+      { to: "/rebalance", label: "비중 & 리밸런싱", icon: Scale },
+      { to: "/performance", label: "성과 분석", icon: LineChart },
+    ],
+  },
+  {
+    label: "설정",
+    items: [
+      { to: "/settings", label: "환경 설정", icon: SettingsIcon },
+    ],
+  },
 ];
 
 export default function Sidebar({ open, onClose, onLogout, userEmail }) {
@@ -30,29 +46,34 @@ export default function Sidebar({ open, onClose, onLogout, userEmail }) {
         </div>
 
         <nav className="sidebar-nav">
-          {MENU.map((item) => {
-            const active = item.to === "/" ? location.pathname === "/" : location.pathname.startsWith(item.to);
-            const Icon = item.icon;
-            return (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                end={item.to === "/"}
-                className={({ isActive }) => `sidebar-link${isActive ? " active" : ""}`}
-                onClick={onClose}
-              >
-                {active && (
-                  <motion.span
-                    layoutId="active-pill"
-                    className="active-pill"
-                    transition={{ type: "spring", stiffness: 380, damping: 32 }}
-                  />
-                )}
-                <Icon size={16} />
-                <span>{item.label}</span>
-              </NavLink>
-            );
-          })}
+          {MENU_GROUPS.map((group) => (
+            <div className="sidebar-group" key={group.label}>
+              <span className="sidebar-group-label">{group.label}</span>
+              {group.items.map((item) => {
+                const active = item.to === "/" ? location.pathname === "/" : location.pathname.startsWith(item.to);
+                const Icon = item.icon;
+                return (
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    end={item.to === "/"}
+                    className={({ isActive }) => `sidebar-link${isActive ? " active" : ""}`}
+                    onClick={onClose}
+                  >
+                    {active && (
+                      <motion.span
+                        layoutId="active-pill"
+                        className="active-pill"
+                        transition={{ type: "spring", stiffness: 380, damping: 32 }}
+                      />
+                    )}
+                    <Icon size={16} />
+                    <span>{item.label}</span>
+                  </NavLink>
+                );
+              })}
+            </div>
+          ))}
         </nav>
 
         <div className="sidebar-foot">

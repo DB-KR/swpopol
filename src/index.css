@@ -67,7 +67,9 @@ a { color: inherit; }
 .sidebar-head h1 { font-family: 'Noto Serif KR', serif; font-size: 19px; font-weight: 700; margin: 4px 0 0; }
 .sidebar-close { display: none; background: none; border: none; color: var(--ink-soft); cursor: pointer; }
 
-.sidebar-nav { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+.sidebar-nav { display: flex; flex-direction: column; gap: 20px; flex: 1; }
+.sidebar-group { display: flex; flex-direction: column; gap: 3px; }
+.sidebar-group-label { font-family: 'IBM Plex Mono'; font-size: 10px; letter-spacing: 1.5px; color: var(--ink-soft); padding: 0 14px 4px; opacity: 0.75; }
 .sidebar-link {
   position: relative;
   display: flex; align-items: center; gap: 10px;

@@ -7,10 +7,11 @@ import { DataProvider } from "./context/DataContext";
 import Sidebar from "./components/Sidebar";
 import Login from "./components/Login";
 import Overview from "./pages/Overview";
-import Trend from "./pages/Trend";
-import Goal from "./pages/Goal";
 import Cashflow from "./pages/Cashflow";
 import Assets from "./pages/Assets";
+import Holdings from "./pages/Holdings";
+import Rebalance from "./pages/Rebalance";
+import Performance from "./pages/Performance";
 import Settings from "./pages/Settings";
 
 function PageWrap({ children }) {
@@ -32,10 +33,11 @@ function AnimatedRoutes() {
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
         <Route path="/" element={<PageWrap><Overview /></PageWrap>} />
-        <Route path="/trend" element={<PageWrap><Trend /></PageWrap>} />
-        <Route path="/goal" element={<PageWrap><Goal /></PageWrap>} />
-        <Route path="/cashflow" element={<PageWrap><Cashflow /></PageWrap>} />
         <Route path="/assets" element={<PageWrap><Assets /></PageWrap>} />
+        <Route path="/cashflow" element={<PageWrap><Cashflow /></PageWrap>} />
+        <Route path="/holdings" element={<PageWrap><Holdings /></PageWrap>} />
+        <Route path="/rebalance" element={<PageWrap><Rebalance /></PageWrap>} />
+        <Route path="/performance" element={<PageWrap><Performance /></PageWrap>} />
         <Route path="/settings" element={<PageWrap><Settings /></PageWrap>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
