@@ -84,3 +84,28 @@ export function computeYearlyGoalProgress(snapshots, targetAmount) {
       pct: (byYear[year].total / targetAmount) * 100,
     }));
 }
+
+// 목표 게이지를 연도별 색상 구간으로 나눕니다. 완료된 연도는 그 해 마지막 스냅샷을,
+// 올해는 실시간 총자산을 사용합니다. 자산이 줄어든 해는 구간 폭이 0이 되어 표시되지 않습니다.
+export function computeGaugeSegments(snapshots, targetAmount, totalAssets, colorFn) {
+  if (!targetAmount || targetAmount <= 0) return [];
+  const thisYear = String(new Date().getFullYear());
+  const totals = {};
+  snapshots.forEach((s) => {
+    const year = s.month.slice(0, 4);
+    if (!totals[year] || s.month > totals[year].month) totals[year] = { month: s.month, total: s.total };
+  });
+  const yearTotal = {};
+  Object.keys(totals).forEach((y) => { yearTotal[y] = totals[y].total; });
+  yearTotal[thisYear] = totalAssets;
+
+  const years = Object.keys(yearTotal).sort();
+  let prevPct = 0;
+  return years.map((year, i) => {
+    const pct = Math.min(100, (yearTotal[year] / targetAmount) * 100);
+    const to = Math.max(prevPct, pct);
+    const from = prevPct;
+    prevPct = to;
+    return { year, from, to, color: colorFn(i) };
+  });
+}

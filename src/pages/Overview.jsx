@@ -2,11 +2,11 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { TrendingUp, TrendingDown, Target, Check } from "lucide-react";
 import { useData } from "../context/DataContext";
-import { CATEGORIES, ASSET_MILESTONES } from "../lib/constants";
-import { formatManwon, formatPct, currentMonth, aggregateCashflowByMonth, computeYearlyGoalProgress } from "../lib/format";
+import { CATEGORIES, ASSET_MILESTONES, getYearColor } from "../lib/constants";
+import { formatManwon, formatPct, currentMonth, aggregateCashflowByMonth, computeGaugeSegments } from "../lib/format";
 import { useCountUp } from "../lib/useCountUp";
 import { useFxRates } from "../lib/useFxRates";
-import { AllocationDonut, HoldingsBar, YearlyGoalChart } from "../components/charts";
+import { AllocationDonut, HoldingsBar } from "../components/charts";
 
 export default function Overview() {
   const { assets, snapshots, goal, cashflowItems, loading, error } = useData();
@@ -27,7 +27,7 @@ export default function Overview() {
 
   const goalProgressPct = goal && goal.target_amount > 0 ? (totalAssets / goal.target_amount) * 100 : null;
   const goalRemaining = goal && goal.target_amount > 0 ? Math.max(0, goal.target_amount - totalAssets) : null;
-  const yearlyProgress = computeYearlyGoalProgress(snapshots, goal?.target_amount);
+  const gaugeSegments = goal ? computeGaugeSegments(snapshots, goal.target_amount, totalAssets, getYearColor) : [];
 
   const monthlyCashflow = aggregateCashflowByMonth(cashflowItems);
   const savingsRate = (() => {
@@ -93,8 +93,23 @@ export default function Overview() {
               <span className={`gauge-pct ${(goalProgressPct || 0) >= 100 ? "pos" : ""}`}>{(goalProgressPct || 0).toFixed(1)}%</span>
             </div>
             <div className="gauge-track">
-              <div className="gauge-fill" style={{ width: `${Math.min(100, goalProgressPct || 0)}%` }} />
+              {gaugeSegments.map((seg) => (
+                <div
+                  key={seg.year}
+                  className="gauge-segment"
+                  style={{ left: `${seg.from}%`, width: `${seg.to - seg.from}%`, background: seg.color }}
+                  title={`${seg.year}년`}
+                />
+              ))}
               {[25, 50, 75].map((t) => <div className="gauge-tick" style={{ left: `${t}%` }} key={t} />)}
+            </div>
+            <div className="gauge-legend">
+              {gaugeSegments.map((seg) => (
+                <span className="gauge-legend-item" key={seg.year}>
+                  <span className="gauge-legend-dot" style={{ background: seg.color }} />
+                  {seg.year}
+                </span>
+              ))}
             </div>
             <div className="gauge-foot">
               <span>0원</span>
@@ -122,21 +137,6 @@ export default function Overview() {
             );
           })}
         </div>
-      </div>
-
-      <div className="card">
-        <div className="card-head">
-          <h2>연도별 목표 달성률</h2>
-          <span className="card-sub">연말 기준 스냅샷 대비</span>
-        </div>
-        {!goal ? (
-          <div className="empty-state">
-            <div className="empty-ring" />
-            <p>목표를 설정하면 연도별 달성률이 표시돼요.</p>
-          </div>
-        ) : (
-          <YearlyGoalChart data={yearlyProgress} />
-        )}
       </div>
 
       <div className="grid-2">

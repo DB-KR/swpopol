@@ -205,8 +205,11 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
 .gauge-label { font-family: 'IBM Plex Mono'; font-size: 13px; color: var(--ink-soft); }
 .gauge-pct { font-family: 'IBM Plex Mono'; font-size: 30px; font-weight: 700; line-height: 1; }
 .gauge-track { position: relative; height: 22px; background: var(--paper); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
-.gauge-fill { height: 100%; background: linear-gradient(90deg, var(--growth-green), var(--ink)); transition: width 0.6s ease; }
-.gauge-tick { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--card-bg); opacity: 0.6; }
+.gauge-segment { position: absolute; top: 0; bottom: 0; transition: width 0.6s ease, left 0.6s ease; }
+.gauge-tick { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--card-bg); opacity: 0.6; z-index: 1; }
+.gauge-legend { display: flex; flex-wrap: wrap; gap: 12px; }
+.gauge-legend-item { display: inline-flex; align-items: center; gap: 5px; font-family: 'IBM Plex Mono'; font-size: 11px; color: var(--ink-soft); }
+.gauge-legend-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
 .gauge-foot { display: flex; justify-content: space-between; font-family: 'IBM Plex Mono'; font-size: 11px; color: var(--ink-soft); }
 
 /* Milestone stepper */

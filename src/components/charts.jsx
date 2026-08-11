@@ -110,8 +110,16 @@ export function AllocationDonut({ allocation, totalAssets }) {
 }
 
 export function HoldingsBar({ assets }) {
-  const data = [...assets]
-    .map((a) => ({ name: a.name, value: Number(a.value) || 0, color: getCategory(a.category).color }))
+  const grouped = {};
+  assets.forEach((a) => {
+    const key = a.name.trim();
+    if (!key) return;
+    if (!grouped[key]) {
+      grouped[key] = { name: key, value: 0, color: getCategory(a.category).color };
+    }
+    grouped[key].value += Number(a.value) || 0;
+  });
+  const data = Object.values(grouped)
     .sort((a, b) => b.value - a.value)
     .slice(0, 8);
 
