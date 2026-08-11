@@ -20,6 +20,30 @@ alter table public.assets add column if not exists buy_price numeric;
 alter table public.assets add column if not exists sell_price numeric;
 alter table public.assets add column if not exists buy_fx_rate numeric;
 alter table public.assets add column if not exists buy_date date;
+alter table public.assets add column if not exists quantity numeric;
+
+create table if not exists public.liabilities (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  category text not null default 'other',
+  name text not null,
+  amount numeric not null default 0,
+  interest_rate numeric,
+  memo text default '',
+  created_at timestamptz not null default now()
+);
+alter table public.assets add column if not exists quantity numeric;
+
+create table if not exists public.liabilities (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  name text not null,
+  amount numeric not null default 0,
+  interest_rate numeric,
+  memo text default '',
+  created_at timestamptz not null default now()
+);
+alter table public.liabilities enable row level security;
 
 create table if not exists public.snapshots (
   id uuid primary key default gen_random_uuid(),
@@ -76,6 +100,7 @@ alter table public.snapshots enable row level security;
 alter table public.goals enable row level security;
 alter table public.cashflow enable row level security;
 alter table public.cashflow_items enable row level security;
+alter table public.liabilities enable row level security;
 
 -- 본인 데이터만 읽고 쓸 수 있도록 제한 (다른 사람은 로그인해도 서로의 데이터를 볼 수 없습니다)
 -- drop 후 다시 만드는 방식이라 몇 번을 재실행해도 안전합니다.
@@ -97,4 +122,8 @@ create policy "individual access" on public.cashflow
 
 drop policy if exists "individual access" on public.cashflow_items;
 create policy "individual access" on public.cashflow_items
+  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+drop policy if exists "individual access" on public.liabilities;
+create policy "individual access" on public.liabilities
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);

@@ -48,7 +48,7 @@ function GaugeBlock({ label, total, target, segments }) {
 }
 
 export default function Overview() {
-  const { assets, snapshots, goal, cashflowItems, loading, error, saveGoal, saveSnapshot, deleteSnapshot } = useData();
+  const { assets, liabilities, snapshots, goal, cashflowItems, loading, error, saveGoal, saveSnapshot, deleteSnapshot } = useData();
   const { rates: fxRates } = useFxRates(["USD"]);
   const [showGoalForm, setShowGoalForm] = useState(false);
   const [showSnapshotForm, setShowSnapshotForm] = useState(false);
@@ -57,7 +57,9 @@ export default function Overview() {
   const realEstateTotal = assets.filter((a) => a.category === "realestate").reduce((s, a) => s + Number(a.value || 0), 0);
   const totalAssets = assets.reduce((s, a) => s + Number(a.value || 0), 0);
   const financialTotal = totalAssets - realEstateTotal;
-  const animatedTotal = useCountUp(totalAssets);
+  const totalLiabilities = liabilities.reduce((s, l) => s + Number(l.amount || 0), 0);
+  const netWorth = totalAssets - totalLiabilities;
+  const animatedTotal = useCountUp(netWorth);
 
   const trendData = [...snapshots].sort((a, b) => a.month.localeCompare(b.month));
   const hasSnapshotThisMonth = trendData.some((s) => s.month === currentMonth());
@@ -110,11 +112,12 @@ export default function Overview() {
         </div>
         <div className="hero-main">
           <div className="hero-total">
-            <span className="hero-total-label">총자산</span>
+            <span className="hero-total-label">순자산</span>
             <span className="hero-total-value">{formatManwon(animatedTotal)}</span>
+            <span className="hero-breakdown">자산 {formatManwon(totalAssets)} · 부채 {formatManwon(totalLiabilities)}</span>
             {momChangePct !== null && (
               <span className={`hero-change ${momChangePct >= 0 ? "pos" : "neg"}`}>
-                {momChangePct >= 0 ? <TrendingUp size={13} /> : <TrendingDown size={13} />} 전월대비 {formatPct(momChangePct)}
+                {momChangePct >= 0 ? <TrendingUp size={13} /> : <TrendingDown size={13} />} 자산 전월대비 {formatPct(momChangePct)}
               </span>
             )}
           </div>
@@ -204,16 +207,16 @@ export default function Overview() {
       <div className="card">
         <div className="card-head">
           <h2>자산 마일스톤</h2>
-          <span className="card-sub">구간별 달성 현황</span>
+          <span className="card-sub">순자산 기준 구간별 달성 현황</span>
         </div>
         <div className="milestones">
           {ASSET_MILESTONES.map((m, i) => {
-            const achieved = totalAssets >= m;
+            const achieved = netWorth >= m;
             return (
               <div className={`milestone ${achieved ? "done" : ""}`} key={m}>
                 <div className="milestone-dot">{achieved ? <Check size={14} /> : i + 1}</div>
                 <span className="milestone-amount">{formatManwon(m)}</span>
-                {!achieved && <span className="milestone-remain">{formatManwon(m - totalAssets)} 남음</span>}
+                {!achieved && <span className="milestone-remain">{formatManwon(m - netWorth)} 남음</span>}
               </div>
             );
           })}

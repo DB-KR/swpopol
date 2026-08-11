@@ -91,12 +91,27 @@ export function computeAssetReturns(asset, fxRates = {}) {
     }
   }
 
+  // 수량이 있으면 절대 평가손익(만원)도 계산합니다.
+  let gainManwon = null;
+  const qty = asset.quantity;
+  if (qty !== null && qty !== undefined && qty !== "" && Number(qty) > 0) {
+    const rateForBuy = isForeign ? Number(buyFx) || 0 : 1;
+    const rateForSell = isForeign ? (currentFxRate || Number(buyFx) || 0) : 1;
+    if (!isForeign || (rateForBuy && rateForSell)) {
+      const boughtManwon = (Number(qty) * Number(buy) * rateForBuy) / 10000;
+      const nowManwon = (Number(qty) * Number(sell) * rateForSell) / 10000;
+      gainManwon = nowManwon - boughtManwon;
+    }
+  }
+
   return {
     priceReturnPct,
     fxReturnPct,
     totalReturnPct,
     annualizedReturnPct,
     holdingDays,
+    gainManwon,
+    quantity: qty,
     currentFxRate,
     hasFx,
     isForeign,

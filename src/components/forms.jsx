@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { CATEGORIES, INCOME_CATEGORIES, EXPENSE_CATEGORIES, CURRENCIES } from "../lib/constants";
+import { CATEGORIES, INCOME_CATEGORIES, EXPENSE_CATEGORIES, CURRENCIES, LIABILITY_CATEGORIES } from "../lib/constants";
 import { currentMonth } from "../lib/format";
 
 export function AssetForm({ initial, onSubmit, onCancel }) {
@@ -12,6 +12,7 @@ export function AssetForm({ initial, onSubmit, onCancel }) {
   const [sellPrice, setSellPrice] = useState(initial?.sell_price ?? "");
   const [buyFxRate, setBuyFxRate] = useState(initial?.buy_fx_rate ?? "");
   const [buyDate, setBuyDate] = useState(initial?.buy_date || "");
+  const [quantity, setQuantity] = useState(initial?.quantity ?? "");
   const [showReturns, setShowReturns] = useState(!!(initial?.buy_price || initial?.sell_price));
   const [saving, setSaving] = useState(false);
 
@@ -29,6 +30,7 @@ export function AssetForm({ initial, onSubmit, onCancel }) {
       sellPrice: showReturns ? sellPrice : "",
       buyFxRate: showReturns && currency !== "KRW" ? buyFxRate : "",
       buyDate: showReturns ? buyDate : "",
+      quantity: showReturns ? quantity : "",
     });
     setSaving(false);
   }
@@ -62,7 +64,7 @@ export function AssetForm({ initial, onSubmit, onCancel }) {
 
       {!showReturns ? (
         <button type="button" className="link-btn" onClick={() => setShowReturns(true)}>
-          + 매수가·매도가·수익률 기록하기 (선택)
+          + 수량·매수가·매도가·수익률 기록하기 (선택)
         </button>
       ) : (
         <>
@@ -81,6 +83,10 @@ export function AssetForm({ initial, onSubmit, onCancel }) {
             </label>
           </div>
           <div className="form-row">
+            <label>
+              수량 (주/좌, 선택)
+              <input type="number" value={quantity} onChange={(e) => setQuantity(e.target.value)} placeholder="예: 10" min="0" step="0.0001" />
+            </label>
             <label>
               매수가 (1주/1좌 기준, {currency})
               <input type="number" value={buyPrice} onChange={(e) => setBuyPrice(e.target.value)} placeholder="예: 150.25" min="0" step="0.01" />
@@ -107,6 +113,60 @@ export function AssetForm({ initial, onSubmit, onCancel }) {
       <div className="form-actions">
         <button type="button" className="btn-ghost" onClick={onCancel}>취소</button>
         <button type="submit" className="btn-primary" disabled={saving}>{initial ? "수정 완료" : "자산 추가"}</button>
+      </div>
+    </form>
+  );
+}
+
+export function LiabilityForm({ initial, onSubmit, onCancel }) {
+  const [category, setCategory] = useState(initial?.category || LIABILITY_CATEGORIES[0].key);
+  const [name, setName] = useState(initial?.name || "");
+  const [amount, setAmount] = useState(initial?.amount ?? "");
+  const [interestRate, setInterestRate] = useState(initial?.interest_rate ?? "");
+  const [memo, setMemo] = useState(initial?.memo || "");
+  const [saving, setSaving] = useState(false);
+
+  async function submit(e) {
+    e.preventDefault();
+    if (!name.trim() || amount === "") return;
+    setSaving(true);
+    await onSubmit({ category, name, amount, interestRate, memo });
+    setSaving(false);
+  }
+
+  return (
+    <form className="ledger-form" onSubmit={submit}>
+      <div className="form-row">
+        <label>
+          구분
+          <select value={category} onChange={(e) => setCategory(e.target.value)}>
+            {LIABILITY_CATEGORIES.map((c) => (
+              <option key={c.key} value={c.key}>{c.label}</option>
+            ))}
+          </select>
+        </label>
+        <label>
+          부채명
+          <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="예: OO은행 주택담보대출" required />
+        </label>
+      </div>
+      <div className="form-row">
+        <label>
+          잔액 (만원)
+          <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="예: 15000" min="0" required />
+        </label>
+        <label>
+          이자율 (%, 선택)
+          <input type="number" value={interestRate} onChange={(e) => setInterestRate(e.target.value)} placeholder="예: 3.5" min="0" step="0.01" />
+        </label>
+        <label>
+          메모 (선택)
+          <input type="text" value={memo} onChange={(e) => setMemo(e.target.value)} placeholder="예: 만기일 등" />
+        </label>
+      </div>
+      <div className="form-actions">
+        <button type="button" className="btn-ghost" onClick={onCancel}>취소</button>
+        <button type="submit" className="btn-primary" disabled={saving}>{initial ? "수정 완료" : "부채 추가"}</button>
       </div>
     </form>
   );

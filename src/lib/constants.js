@@ -49,3 +49,14 @@ export function getYearColor(index) {
 
 // 자산 마일스톤 (만원 단위): 1억, 3억, 5억, 10억, 20억
 export const ASSET_MILESTONES = [10000, 30000, 50000, 100000, 200000];
+
+export const LIABILITY_CATEGORIES = [
+  { key: "mortgage", label: "주택담보대출", color: "#B23A2F" },
+  { key: "credit", label: "신용대출", color: "#B08D57" },
+  { key: "jeonse", label: "전세자금대출", color: "#1B2A41" },
+  { key: "other", label: "기타부채", color: "#5B6472" },
+];
+
+export function getLiabilityCategory(key) {
+  return LIABILITY_CATEGORIES.find((c) => c.key === key) || LIABILITY_CATEGORIES[3];
+}

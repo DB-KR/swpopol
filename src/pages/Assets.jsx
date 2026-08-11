@@ -1,18 +1,28 @@
 import React, { useState } from "react";
 import { Plus, Pencil, Trash2, TrendingUp, TrendingDown } from "lucide-react";
 import { useData } from "../context/DataContext";
-import { getCategory } from "../lib/constants";
+import { getCategory, getLiabilityCategory } from "../lib/constants";
 import { formatManwon, formatCurrencyAmount, formatPct, formatDate, computeAssetReturns } from "../lib/format";
-import { AssetForm } from "../components/forms";
+import { AssetForm, LiabilityForm } from "../components/forms";
 import { useFxRates } from "../lib/useFxRates";
 
 export default function Assets() {
-  const { assets, loading, addAsset, updateAsset, deleteAsset } = useData();
+  const {
+    assets, liabilities, loading,
+    addAsset, updateAsset, deleteAsset,
+    addLiability, updateLiability, deleteLiability,
+  } = useData();
   const [showAdd, setShowAdd] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const [showAddLiability, setShowAddLiability] = useState(false);
+  const [editingLiabilityId, setEditingLiabilityId] = useState(null);
 
   const foreignCurrencies = assets.map((a) => a.currency).filter((c) => c && c !== "KRW");
   const { rates: fxRates, loading: fxLoading } = useFxRates(foreignCurrencies);
+
+  const totalAssets = assets.reduce((s, a) => s + Number(a.value || 0), 0);
+  const totalLiabilities = liabilities.reduce((s, l) => s + Number(l.amount || 0), 0);
+  const netWorth = totalAssets - totalLiabilities;
 
   if (loading) return <div className="loading-screen">불러오는 중…</div>;
 
@@ -20,7 +30,29 @@ export default function Assets() {
     <div className="page">
       <div className="card">
         <div className="card-head">
-          <h2>자산 구성</h2>
+          <h2>순자산 요약</h2>
+        </div>
+        <div className="networth-summary">
+          <div className="networth-item">
+            <span className="networth-label">자산</span>
+            <span className="networth-value pos">{formatManwon(totalAssets)}</span>
+          </div>
+          <span className="networth-op">−</span>
+          <div className="networth-item">
+            <span className="networth-label">부채</span>
+            <span className="networth-value neg">{formatManwon(totalLiabilities)}</span>
+          </div>
+          <span className="networth-op">=</span>
+          <div className="networth-item">
+            <span className="networth-label">순자산</span>
+            <span className="networth-value strong">{formatManwon(netWorth)}</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="card">
+        <div className="card-head">
+          <h2>자산</h2>
           {!showAdd && (
             <button className="btn-primary" onClick={() => setShowAdd(true)}><Plus size={14} /> 자산 추가</button>
           )}
@@ -64,7 +96,7 @@ export default function Assets() {
                         {getCategory(a.category).label}
                       </span>
                     </span>
-                    <span>{a.name}</span>
+                    <span>{a.name}{a.quantity ? <span className="muted"> · {a.quantity}주</span> : null}</span>
                     <span className="muted">{a.memo || "-"}</span>
                     <span className="num">
                       {formatManwon(a.value)}
@@ -83,6 +115,61 @@ export default function Assets() {
                 </React.Fragment>
               );
             })}
+          </div>
+        )}
+      </div>
+
+      <div className="card">
+        <div className="card-head">
+          <h2>부채</h2>
+          {!showAddLiability && (
+            <button className="btn-primary" onClick={() => setShowAddLiability(true)}><Plus size={14} /> 부채 추가</button>
+          )}
+        </div>
+
+        {showAddLiability && (
+          <LiabilityForm
+            onSubmit={async (f) => { await addLiability(f); setShowAddLiability(false); }}
+            onCancel={() => setShowAddLiability(false)}
+          />
+        )}
+
+        {liabilities.length === 0 && !showAddLiability ? (
+          <div className="empty-state">
+            <div className="empty-ring" />
+            <p>등록된 부채가 없어요.</p>
+          </div>
+        ) : (
+          <div className="ledger-table">
+            <div className="ledger-row ledger-head">
+              <span>구분</span><span>부채명</span><span>메모</span><span className="num">잔액</span><span></span>
+            </div>
+            {liabilities.map((l) =>
+              editingLiabilityId === l.id ? (
+                <div className="ledger-row-edit" key={l.id}>
+                  <LiabilityForm
+                    initial={l}
+                    onSubmit={async (f) => { await updateLiability(l.id, f); setEditingLiabilityId(null); }}
+                    onCancel={() => setEditingLiabilityId(null)}
+                  />
+                </div>
+              ) : (
+                <div className="ledger-row" key={l.id}>
+                  <span>
+                    <span className="tag" style={{ color: getLiabilityCategory(l.category).color, borderColor: getLiabilityCategory(l.category).color }}>
+                      {getLiabilityCategory(l.category).label}
+                    </span>
+                  </span>
+                  <span>{l.name}{l.interest_rate ? <span className="muted"> · 연 {l.interest_rate}%</span> : null}</span>
+                  <span className="muted">{l.memo || "-"}</span>
+                  <span className="num neg">{formatManwon(l.amount)}</span>
+                  <span className="row-actions">
+                    <button className="icon-btn" onClick={() => setEditingLiabilityId(l.id)} aria-label="수정"><Pencil size={13} /></button>
+                    <button className="icon-btn" onClick={() => deleteLiability(l.id)} aria-label="삭제"><Trash2 size={13} /></button>
+                  </span>
+                </div>
+              )
+            )}
           </div>
         )}
       </div>
@@ -115,6 +202,11 @@ function AssetReturnDetail({ asset, returns: r, fxLoading }) {
       {r.annualizedReturnPct !== null && (
         <span className={`return-chip strong ${r.annualizedReturnPct >= 0 ? "pos" : "neg"}`}>
           연평균 {formatPct(r.annualizedReturnPct)} ({Math.round(r.holdingDays)}일 보유)
+        </span>
+      )}
+      {r.gainManwon !== null && (
+        <span className={`return-chip strong ${r.gainManwon >= 0 ? "pos" : "neg"}`}>
+          평가손익 {r.gainManwon >= 0 ? "+" : ""}{formatManwon(r.gainManwon)}
         </span>
       )}
     </div>
