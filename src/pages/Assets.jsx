@@ -43,16 +43,20 @@ export default function Assets() {
             <div className="ledger-row ledger-head">
               <span>구분</span><span>자산명</span><span>메모</span><span className="num">평가금액</span><span></span>
             </div>
-            {assets.map((a) =>
-              editingId === a.id ? (
-                <div className="ledger-row-edit" key={a.id}>
-                  <AssetForm
-                    initial={a}
-                    onSubmit={async (f) => { await updateAsset(a.id, f); setEditingId(null); }}
-                    onCancel={() => setEditingId(null)}
-                  />
-                </div>
-              ) : (
+            {assets.map((a) => {
+              if (editingId === a.id) {
+                return (
+                  <div className="ledger-row-edit" key={a.id}>
+                    <AssetForm
+                      initial={a}
+                      onSubmit={async (f) => { await updateAsset(a.id, f); setEditingId(null); }}
+                      onCancel={() => setEditingId(null)}
+                    />
+                  </div>
+                );
+              }
+              const r = computeAssetReturns(a, fxRates);
+              return (
                 <React.Fragment key={a.id}>
                   <div className="ledger-row">
                     <span>
@@ -62,16 +66,23 @@ export default function Assets() {
                     </span>
                     <span>{a.name}</span>
                     <span className="muted">{a.memo || "-"}</span>
-                    <span className="num">{formatManwon(a.value)}</span>
+                    <span className="num">
+                      {formatManwon(a.value)}
+                      {r && (
+                        <span className={`inline-return ${r.totalReturnPct >= 0 ? "pos" : "neg"}`}>
+                          {formatPct(r.totalReturnPct)}
+                        </span>
+                      )}
+                    </span>
                     <span className="row-actions">
                       <button className="icon-btn" onClick={() => setEditingId(a.id)} aria-label="수정"><Pencil size={13} /></button>
                       <button className="icon-btn" onClick={() => deleteAsset(a.id)} aria-label="삭제"><Trash2 size={13} /></button>
                     </span>
                   </div>
-                  <AssetReturnDetail asset={a} fxRates={fxRates} fxLoading={fxLoading} />
+                  {r && <AssetReturnDetail asset={a} returns={r} fxLoading={fxLoading} />}
                 </React.Fragment>
-              )
-            )}
+              );
+            })}
           </div>
         )}
       </div>
@@ -79,20 +90,7 @@ export default function Assets() {
   );
 }
 
-function AssetReturnDetail({ asset, fxRates, fxLoading }) {
-  const r = computeAssetReturns(asset);
-  if (!r) return null;
-
-  const currentFxRate = r.isForeign ? fxRates[asset.currency] : null;
-
-  let fxReturnPct = null;
-  let totalReturnPct = r.priceReturnPct;
-
-  if (r.hasFx && currentFxRate) {
-    fxReturnPct = ((currentFxRate - Number(asset.buy_fx_rate)) / Number(asset.buy_fx_rate)) * 100;
-    totalReturnPct = ((1 + r.priceReturnPct / 100) * (1 + fxReturnPct / 100) - 1) * 100;
-  }
-
+function AssetReturnDetail({ asset, returns: r, fxLoading }) {
   return (
     <div className="return-detail">
       <span className="return-chip">
@@ -102,16 +100,16 @@ function AssetReturnDetail({ asset, fxRates, fxLoading }) {
         {r.priceReturnPct >= 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />} 가격 {formatPct(r.priceReturnPct)}
       </span>
       {r.isForeign && (
-        fxReturnPct !== null ? (
-          <span className={`return-chip ${fxReturnPct >= 0 ? "pos" : "neg"}`}>
-            환율 {formatPct(fxReturnPct)} (현재 {currentFxRate.toFixed(1)}원)
+        r.fxReturnPct !== null ? (
+          <span className={`return-chip ${r.fxReturnPct >= 0 ? "pos" : "neg"}`}>
+            환율 {formatPct(r.fxReturnPct)} (현재 {r.currentFxRate.toFixed(1)}원)
           </span>
         ) : (
           <span className="return-chip muted">{fxLoading ? "환율 조회 중…" : "환율 정보 없음"}</span>
         )
       )}
-      <span className={`return-chip strong ${totalReturnPct >= 0 ? "pos" : "neg"}`}>
-        총수익률 {formatPct(totalReturnPct)}
+      <span className={`return-chip strong ${r.totalReturnPct >= 0 ? "pos" : "neg"}`}>
+        총수익률 {formatPct(r.totalReturnPct)}
       </span>
     </div>
   );

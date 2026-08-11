@@ -46,8 +46,8 @@ export function formatCurrencyAmount(value, currencyKey) {
 }
 
 // 매수가/매도가(+환율)로부터 가격 수익률, 환차손익률, 총수익률(%)을 계산합니다.
-// 외화 자산이 아니거나 값이 비어있으면 해당 항목은 null로 반환합니다.
-export function computeAssetReturns(asset) {
+// 외화 자산이 아니거나 값이 비어있으면 null을 반환합니다. fxRates는 { USD: 1350.2, ... } 형태의 현재 환율입니다.
+export function computeAssetReturns(asset, fxRates = {}) {
   const buy = asset.buy_price;
   const sell = asset.sell_price;
   if (buy === null || buy === undefined || buy === "" || Number(buy) === 0) return null;
@@ -59,12 +59,27 @@ export function computeAssetReturns(asset) {
   const buyFx = asset.buy_fx_rate;
   const hasFx = isForeign && buyFx !== null && buyFx !== undefined && buyFx !== "" && Number(buyFx) !== 0;
 
+  let fxReturnPct = null;
+  let totalReturnPct = priceReturnPct;
+  let currentFxRate = null;
+
+  if (hasFx) {
+    currentFxRate = fxRates[asset.currency] || null;
+    if (currentFxRate) {
+      fxReturnPct = ((currentFxRate - Number(buyFx)) / Number(buyFx)) * 100;
+      totalReturnPct = ((1 + priceReturnPct / 100) * (1 + fxReturnPct / 100) - 1) * 100;
+    }
+  }
+
   return {
     priceReturnPct,
+    fxReturnPct,
+    totalReturnPct,
+    currentFxRate,
     hasFx,
+    isForeign,
     buy,
     sell,
-    isForeign,
   };
 }
 
