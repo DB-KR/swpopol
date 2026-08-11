@@ -45,7 +45,13 @@ export function formatCurrencyAmount(value, currencyKey) {
   return `${symbol}${Number(value).toLocaleString("en-US", { maximumFractionDigits: 2 })}`;
 }
 
-// 매수가/매도가(+환율)로부터 가격 수익률, 환차손익률, 총수익률(%)을 계산합니다.
+export function formatDate(dateStr) {
+  if (!dateStr) return "";
+  const [y, m, d] = dateStr.split("-");
+  return `${y}.${m}.${d}`;
+}
+
+// 매수가/매도가(+환율/매수일)로부터 가격 수익률, 환차손익률, 총수익률, 연환산 수익률(%)을 계산합니다.
 // 외화 자산이 아니거나 값이 비어있으면 null을 반환합니다. fxRates는 { USD: 1350.2, ... } 형태의 현재 환율입니다.
 export function computeAssetReturns(asset, fxRates = {}) {
   const buy = asset.buy_price;
@@ -71,10 +77,26 @@ export function computeAssetReturns(asset, fxRates = {}) {
     }
   }
 
+  let annualizedReturnPct = null;
+  let holdingDays = null;
+  if (asset.buy_date) {
+    const buyDate = new Date(asset.buy_date);
+    const days = (Date.now() - buyDate.getTime()) / (1000 * 60 * 60 * 24);
+    if (days > 0) {
+      holdingDays = days;
+      const growth = 1 + totalReturnPct / 100;
+      if (growth > 0) {
+        annualizedReturnPct = (Math.pow(growth, 365 / days) - 1) * 100;
+      }
+    }
+  }
+
   return {
     priceReturnPct,
     fxReturnPct,
     totalReturnPct,
+    annualizedReturnPct,
+    holdingDays,
     currentFxRate,
     hasFx,
     isForeign,

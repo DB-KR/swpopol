@@ -19,6 +19,7 @@ alter table public.assets add column if not exists currency text not null defaul
 alter table public.assets add column if not exists buy_price numeric;
 alter table public.assets add column if not exists sell_price numeric;
 alter table public.assets add column if not exists buy_fx_rate numeric;
+alter table public.assets add column if not exists buy_date date;
 
 create table if not exists public.snapshots (
   id uuid primary key default gen_random_uuid(),

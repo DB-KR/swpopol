@@ -11,6 +11,7 @@ export function AssetForm({ initial, onSubmit, onCancel }) {
   const [buyPrice, setBuyPrice] = useState(initial?.buy_price ?? "");
   const [sellPrice, setSellPrice] = useState(initial?.sell_price ?? "");
   const [buyFxRate, setBuyFxRate] = useState(initial?.buy_fx_rate ?? "");
+  const [buyDate, setBuyDate] = useState(initial?.buy_date || "");
   const [showReturns, setShowReturns] = useState(!!(initial?.buy_price || initial?.sell_price));
   const [saving, setSaving] = useState(false);
 
@@ -27,6 +28,7 @@ export function AssetForm({ initial, onSubmit, onCancel }) {
       buyPrice: showReturns ? buyPrice : "",
       sellPrice: showReturns ? sellPrice : "",
       buyFxRate: showReturns && currency !== "KRW" ? buyFxRate : "",
+      buyDate: showReturns ? buyDate : "",
     });
     setSaving(false);
   }
@@ -73,6 +75,12 @@ export function AssetForm({ initial, onSubmit, onCancel }) {
                 ))}
               </select>
             </label>
+            <label>
+              매수일
+              <input type="date" value={buyDate} onChange={(e) => setBuyDate(e.target.value)} />
+            </label>
+          </div>
+          <div className="form-row">
             <label>
               매수가 (1주/1좌 기준, {currency})
               <input type="number" value={buyPrice} onChange={(e) => setBuyPrice(e.target.value)} placeholder="예: 150.25" min="0" step="0.01" />

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Plus, Pencil, Trash2, TrendingUp, TrendingDown } from "lucide-react";
 import { useData } from "../context/DataContext";
 import { getCategory } from "../lib/constants";
-import { formatManwon, formatCurrencyAmount, formatPct, computeAssetReturns } from "../lib/format";
+import { formatManwon, formatCurrencyAmount, formatPct, formatDate, computeAssetReturns } from "../lib/format";
 import { AssetForm } from "../components/forms";
 import { useFxRates } from "../lib/useFxRates";
 
@@ -94,6 +94,7 @@ function AssetReturnDetail({ asset, returns: r, fxLoading }) {
   return (
     <div className="return-detail">
       <span className="return-chip">
+        {asset.buy_date && `${formatDate(asset.buy_date)} · `}
         {formatCurrencyAmount(r.buy, asset.currency)} → {formatCurrencyAmount(r.sell, asset.currency)}
       </span>
       <span className={`return-chip ${r.priceReturnPct >= 0 ? "pos" : "neg"}`}>
@@ -111,6 +112,11 @@ function AssetReturnDetail({ asset, returns: r, fxLoading }) {
       <span className={`return-chip strong ${r.totalReturnPct >= 0 ? "pos" : "neg"}`}>
         총수익률 {formatPct(r.totalReturnPct)}
       </span>
+      {r.annualizedReturnPct !== null && (
+        <span className={`return-chip strong ${r.annualizedReturnPct >= 0 ? "pos" : "neg"}`}>
+          연평균 {formatPct(r.annualizedReturnPct)} ({Math.round(r.holdingDays)}일 보유)
+        </span>
+      )}
     </div>
   );
 }
