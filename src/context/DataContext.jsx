@@ -81,10 +81,10 @@ export function DataProvider({ children }) {
     await refresh();
   }
 
-  async function saveSnapshot(month, total) {
+  async function saveSnapshot(month, total, realEstateTotal = 0, financialTotal = 0) {
     const { error: err } = await supabase
       .from("snapshots")
-      .upsert({ month, total }, { onConflict: "user_id,month" });
+      .upsert({ month, total, real_estate_total: realEstateTotal, financial_total: financialTotal }, { onConflict: "user_id,month" });
     if (err) { setError("스냅샷 저장에 실패했어요."); return; }
     await refresh();
   }

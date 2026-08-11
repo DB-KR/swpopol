@@ -224,16 +224,19 @@ export function CashflowItemForm({ initial, onSubmit, onCancel }) {
   );
 }
 
-export function SnapshotForm({ onSubmit, onCancel, defaultTotal }) {
+export function SnapshotForm({ onSubmit, onCancel, defaultRealEstate, defaultFinancial }) {
   const [month, setMonth] = useState(currentMonth());
-  const [total, setTotal] = useState(defaultTotal ?? "");
+  const [realEstate, setRealEstate] = useState(defaultRealEstate ?? "");
+  const [financial, setFinancial] = useState(defaultFinancial ?? "");
   const [saving, setSaving] = useState(false);
+
+  const total = (Number(realEstate) || 0) + (Number(financial) || 0);
 
   async function submit(e) {
     e.preventDefault();
-    if (!month || total === "") return;
+    if (!month || (realEstate === "" && financial === "")) return;
     setSaving(true);
-    await onSubmit(month, Number(total) || 0);
+    await onSubmit(month, total, Number(realEstate) || 0, Number(financial) || 0);
     setSaving(false);
   }
 
@@ -245,10 +248,15 @@ export function SnapshotForm({ onSubmit, onCancel, defaultTotal }) {
           <input type="month" value={month} onChange={(e) => setMonth(e.target.value)} required />
         </label>
         <label>
-          총자산 (만원)
-          <input type="number" value={total} onChange={(e) => setTotal(e.target.value)} min="0" required />
+          부동산 (만원)
+          <input type="number" value={realEstate} onChange={(e) => setRealEstate(e.target.value)} min="0" />
+        </label>
+        <label>
+          금융자산 (만원)
+          <input type="number" value={financial} onChange={(e) => setFinancial(e.target.value)} min="0" />
         </label>
       </div>
+      <p className="form-hint">합계 {total.toLocaleString("ko-KR")}만원</p>
       <div className="form-actions">
         <button type="button" className="btn-ghost" onClick={onCancel}>취소</button>
         <button type="submit" className="btn-primary" disabled={saving}>기록 저장</button>

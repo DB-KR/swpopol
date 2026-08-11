@@ -8,11 +8,51 @@ import { useCountUp } from "../lib/useCountUp";
 import { useFxRates } from "../lib/useFxRates";
 import { AllocationDonut, HoldingsBar } from "../components/charts";
 
+function GaugeBlock({ label, total, target, segments }) {
+  const pct = target > 0 ? (total / target) * 100 : null;
+  const remaining = target > 0 ? Math.max(0, target - total) : null;
+
+  return (
+    <div className="gauge-block">
+      <div className="gauge-head">
+        <span className="gauge-label">{label} · {formatManwon(total)} / {formatManwon(target)}</span>
+        <span className={`gauge-pct ${(pct || 0) >= 100 ? "pos" : ""}`}>{(pct || 0).toFixed(1)}%</span>
+      </div>
+      <div className="gauge-track">
+        {segments.map((seg) => (
+          <div
+            key={seg.year}
+            className="gauge-segment"
+            style={{ left: `${seg.from}%`, width: `${seg.to - seg.from}%`, background: seg.color }}
+            title={`${seg.year}년`}
+          />
+        ))}
+        {[25, 50, 75].map((t) => <div className="gauge-tick" style={{ left: `${t}%` }} key={t} />)}
+      </div>
+      <div className="gauge-legend">
+        {segments.map((seg) => (
+          <span className="gauge-legend-item" key={seg.year}>
+            <span className="gauge-legend-dot" style={{ background: seg.color }} />
+            {seg.year}
+          </span>
+        ))}
+      </div>
+      <div className="gauge-foot">
+        <span>0원</span>
+        <span>{remaining > 0 ? `목표까지 ${formatManwon(remaining)} 남음` : target > 0 ? "목표 달성!" : ""}</span>
+        <span>{formatManwon(target)}</span>
+      </div>
+    </div>
+  );
+}
+
 export default function Overview() {
   const { assets, snapshots, goal, cashflowItems, loading, error } = useData();
   const { rates: fxRates } = useFxRates(["USD"]);
 
+  const realEstateTotal = assets.filter((a) => a.category === "realestate").reduce((s, a) => s + Number(a.value || 0), 0);
   const totalAssets = assets.reduce((s, a) => s + Number(a.value || 0), 0);
+  const financialTotal = totalAssets - realEstateTotal;
   const animatedTotal = useCountUp(totalAssets);
 
   const trendData = [...snapshots].sort((a, b) => a.month.localeCompare(b.month));
@@ -25,10 +65,10 @@ export default function Overview() {
     return ((totalAssets - base) / base) * 100;
   })();
 
-  const combinedTarget = goal ? (goal.real_estate_target || 0) + (goal.financial_target || 0) : 0;
-  const goalProgressPct = combinedTarget > 0 ? (totalAssets / combinedTarget) * 100 : null;
-  const goalRemaining = combinedTarget > 0 ? Math.max(0, combinedTarget - totalAssets) : null;
-  const gaugeSegments = goal ? computeGaugeSegments(snapshots, combinedTarget, totalAssets, getYearColor) : [];
+  const realEstateTarget = goal?.real_estate_target || 0;
+  const financialTarget = goal?.financial_target || 0;
+  const realEstateSegments = computeGaugeSegments(snapshots, realEstateTarget, realEstateTotal, getYearColor, "real_estate_total");
+  const financialSegments = computeGaugeSegments(snapshots, financialTarget, financialTotal, getYearColor, "financial_total");
 
   const monthlyCashflow = aggregateCashflowByMonth(cashflowItems);
   const savingsRate = (() => {
@@ -88,35 +128,9 @@ export default function Overview() {
             <Link to="/goal" className="btn-primary">목표 설정하러 가기</Link>
           </div>
         ) : (
-          <div className="gauge">
-            <div className="gauge-head">
-              <span className="gauge-label">{formatManwon(totalAssets)} / {formatManwon(combinedTarget)}</span>
-              <span className={`gauge-pct ${(goalProgressPct || 0) >= 100 ? "pos" : ""}`}>{(goalProgressPct || 0).toFixed(1)}%</span>
-            </div>
-            <div className="gauge-track">
-              {gaugeSegments.map((seg) => (
-                <div
-                  key={seg.year}
-                  className="gauge-segment"
-                  style={{ left: `${seg.from}%`, width: `${seg.to - seg.from}%`, background: seg.color }}
-                  title={`${seg.year}년`}
-                />
-              ))}
-              {[25, 50, 75].map((t) => <div className="gauge-tick" style={{ left: `${t}%` }} key={t} />)}
-            </div>
-            <div className="gauge-legend">
-              {gaugeSegments.map((seg) => (
-                <span className="gauge-legend-item" key={seg.year}>
-                  <span className="gauge-legend-dot" style={{ background: seg.color }} />
-                  {seg.year}
-                </span>
-              ))}
-            </div>
-            <div className="gauge-foot">
-              <span>0원</span>
-              <span>{goalRemaining > 0 ? `목표까지 ${formatManwon(goalRemaining)} 남음` : "목표 달성!"}</span>
-              <span>{formatManwon(combinedTarget)}</span>
-            </div>
+          <div className="gauge-group">
+            <GaugeBlock label="부동산" total={realEstateTotal} target={realEstateTarget} segments={realEstateSegments} />
+            <GaugeBlock label="금융자산" total={financialTotal} target={financialTarget} segments={financialSegments} />
           </div>
         )}
       </div>

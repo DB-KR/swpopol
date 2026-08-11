@@ -30,6 +30,10 @@ create table if not exists public.snapshots (
   unique (user_id, month)
 );
 
+-- 연도별 부동산/금융자산 게이지를 위해 스냅샷에도 카테고리별 합계를 남깁니다.
+alter table public.snapshots add column if not exists real_estate_total numeric not null default 0;
+alter table public.snapshots add column if not exists financial_total numeric not null default 0;
+
 create table if not exists public.goals (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
