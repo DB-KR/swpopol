@@ -123,6 +123,7 @@ export function LiabilityForm({ initial, onSubmit, onCancel }) {
   const [name, setName] = useState(initial?.name || "");
   const [amount, setAmount] = useState(initial?.amount ?? "");
   const [interestRate, setInterestRate] = useState(initial?.interest_rate ?? "");
+  const [termMonths, setTermMonths] = useState(initial?.term_months ?? "");
   const [memo, setMemo] = useState(initial?.memo || "");
   const [saving, setSaving] = useState(false);
 
@@ -130,7 +131,7 @@ export function LiabilityForm({ initial, onSubmit, onCancel }) {
     e.preventDefault();
     if (!name.trim() || amount === "") return;
     setSaving(true);
-    await onSubmit({ category, name, amount, interestRate, memo });
+    await onSubmit({ category, name, amount, interestRate, termMonths, memo });
     setSaving(false);
   }
 
@@ -159,6 +160,12 @@ export function LiabilityForm({ initial, onSubmit, onCancel }) {
           이자율 (%, 선택)
           <input type="number" value={interestRate} onChange={(e) => setInterestRate(e.target.value)} placeholder="예: 3.5" min="0" step="0.01" />
         </label>
+        <label>
+          남은 상환기간 (개월, 선택)
+          <input type="number" value={termMonths} onChange={(e) => setTermMonths(e.target.value)} placeholder="예: 240" min="0" />
+        </label>
+      </div>
+      <div className="form-row">
         <label>
           메모 (선택)
           <input type="text" value={memo} onChange={(e) => setMemo(e.target.value)} placeholder="예: 만기일 등" />

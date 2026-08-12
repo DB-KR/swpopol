@@ -161,3 +161,58 @@ export function computeGaugeSegments(snapshots, targetAmount, currentValue, colo
     return { year, from, to, color: colorFn(i) };
   });
 }
+
+// 원리금균등상환 방식으로 월 상환액/총이자/총상환액을 계산합니다.
+// principal(만원), annualRatePct(연이자율 %), termMonths(남은 개월 수)
+export function computeAmortization(principal, annualRatePct, termMonths) {
+  const P = Number(principal) || 0;
+  const n = Number(termMonths) || 0;
+  const annualRate = Number(annualRatePct) || 0;
+  if (P <= 0 || n <= 0) return null;
+
+  const r = annualRate / 100 / 12;
+  let monthlyPayment;
+  if (r === 0) {
+    monthlyPayment = P / n;
+  } else {
+    monthlyPayment = (P * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
+  }
+  const totalPayment = monthlyPayment * n;
+  const totalInterest = totalPayment - P;
+
+  const payoffDate = new Date();
+  payoffDate.setMonth(payoffDate.getMonth() + n);
+
+  return { monthlyPayment, totalPayment, totalInterest, payoffDate };
+}
+
+// 연도별 스냅샷(연말 기준)으로 전년대비 순자산·부동산·금융자산 증감을 계산합니다.
+export function computeAnnualReport(snapshots) {
+  const byYear = {};
+  snapshots.forEach((s) => {
+    const year = s.month.slice(0, 4);
+    if (!byYear[year] || s.month > byYear[year].month) byYear[year] = s;
+  });
+  const years = Object.keys(byYear).sort();
+
+  return years.map((year, i) => {
+    const cur = byYear[year];
+    const prev = i > 0 ? byYear[years[i - 1]] : null;
+    const yoyPct = prev && prev.total ? ((cur.total - prev.total) / prev.total) * 100 : null;
+    const realEstateYoyPct = prev && prev.real_estate_total
+      ? ((cur.real_estate_total - prev.real_estate_total) / prev.real_estate_total) * 100
+      : null;
+    const financialYoyPct = prev && prev.financial_total
+      ? ((cur.financial_total - prev.financial_total) / prev.financial_total) * 100
+      : null;
+    return {
+      year,
+      total: cur.total,
+      realEstateTotal: cur.real_estate_total,
+      financialTotal: cur.financial_total,
+      yoyPct,
+      realEstateYoyPct,
+      financialYoyPct,
+    };
+  });
+}

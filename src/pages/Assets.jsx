@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Plus, Pencil, Trash2, TrendingUp, TrendingDown } from "lucide-react";
 import { useData } from "../context/DataContext";
 import { getCategory, getLiabilityCategory } from "../lib/constants";
-import { formatManwon, formatCurrencyAmount, formatPct, formatDate, computeAssetReturns } from "../lib/format";
+import { formatManwon, formatCurrencyAmount, formatPct, formatDate, computeAssetReturns, computeAmortization } from "../lib/format";
 import { AssetForm, LiabilityForm } from "../components/forms";
 import { useFxRates } from "../lib/useFxRates";
 
@@ -154,25 +154,50 @@ export default function Assets() {
                   />
                 </div>
               ) : (
-                <div className="ledger-row" key={l.id}>
-                  <span>
-                    <span className="tag" style={{ color: getLiabilityCategory(l.category).color, borderColor: getLiabilityCategory(l.category).color }}>
-                      {getLiabilityCategory(l.category).label}
+                <React.Fragment key={l.id}>
+                  <div className="ledger-row">
+                    <span>
+                      <span className="tag" style={{ color: getLiabilityCategory(l.category).color, borderColor: getLiabilityCategory(l.category).color }}>
+                        {getLiabilityCategory(l.category).label}
+                      </span>
                     </span>
-                  </span>
-                  <span>{l.name}{l.interest_rate ? <span className="muted"> · 연 {l.interest_rate}%</span> : null}</span>
-                  <span className="muted">{l.memo || "-"}</span>
-                  <span className="num neg">{formatManwon(l.amount)}</span>
-                  <span className="row-actions">
-                    <button className="icon-btn" onClick={() => setEditingLiabilityId(l.id)} aria-label="수정"><Pencil size={13} /></button>
-                    <button className="icon-btn" onClick={() => deleteLiability(l.id)} aria-label="삭제"><Trash2 size={13} /></button>
-                  </span>
-                </div>
+                    <span>{l.name}{l.interest_rate ? <span className="muted"> · 연 {l.interest_rate}%</span> : null}</span>
+                    <span className="muted">{l.memo || "-"}</span>
+                    <span className="num neg">{formatManwon(l.amount)}</span>
+                    <span className="row-actions">
+                      <button className="icon-btn" onClick={() => setEditingLiabilityId(l.id)} aria-label="수정"><Pencil size={13} /></button>
+                      <button className="icon-btn" onClick={() => deleteLiability(l.id)} aria-label="삭제"><Trash2 size={13} /></button>
+                    </span>
+                  </div>
+                  <LiabilityAmortizationDetail liability={l} />
+                </React.Fragment>
               )
             )}
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+function LiabilityAmortizationDetail({ liability }) {
+  const a = computeAmortization(liability.amount, liability.interest_rate, liability.term_months);
+  if (!a) return null;
+
+  return (
+    <div className="return-detail">
+      <span className="return-chip strong">
+        월 상환액 {formatManwon(a.monthlyPayment)}
+      </span>
+      <span className="return-chip neg">
+        총 이자 {formatManwon(a.totalInterest)}
+      </span>
+      <span className="return-chip">
+        총 상환액 {formatManwon(a.totalPayment)}
+      </span>
+      <span className="return-chip muted">
+        예상 완제 {a.payoffDate.getFullYear()}.{String(a.payoffDate.getMonth() + 1).padStart(2, "0")}
+      </span>
     </div>
   );
 }

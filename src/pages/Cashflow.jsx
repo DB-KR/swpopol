@@ -3,7 +3,7 @@ import { Plus, Trash2, Pencil } from "lucide-react";
 import { useData } from "../context/DataContext";
 import { formatManwon, formatMonthLabel, currentMonth, aggregateCashflowByMonth } from "../lib/format";
 import { getIncomeCategory, getExpenseCategory } from "../lib/constants";
-import { CashflowChart, ExpenseBreakdown } from "../components/charts";
+import { CashflowChart, ExpenseBreakdown, SavingsRateChart } from "../components/charts";
 import { CashflowItemForm } from "../components/forms";
 
 export default function Cashflow() {
@@ -16,6 +16,10 @@ export default function Cashflow() {
 
   const latest = monthly.find((m) => m.month === latestMonth);
   const savingsRate = latest && latest.income > 0 ? ((latest.income - latest.expense) / latest.income) * 100 : null;
+
+  const savingsRateSeries = monthly
+    .filter((m) => m.income > 0)
+    .map((m) => ({ month: m.month, rate: ((m.income - m.expense) / m.income) * 100 }));
 
   const expenseAllocation = (() => {
     const sums = {};
@@ -62,6 +66,14 @@ export default function Cashflow() {
           <span className="card-sub">{formatMonthLabel(latestMonth)} 기준</span>
         </div>
         <ExpenseBreakdown allocation={expenseAllocation} />
+      </div>
+
+      <div className="card">
+        <div className="card-head">
+          <h2>저축률 추이</h2>
+          <span className="card-sub">월별 (수입-지출)/수입</span>
+        </div>
+        <SavingsRateChart data={savingsRateSeries} />
       </div>
 
       <div className="card">

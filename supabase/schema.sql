@@ -33,6 +33,9 @@ create table if not exists public.liabilities (
   created_at timestamptz not null default now()
 );
 
+-- 대출 상환 계산기용 남은 상환 개월 수
+alter table public.liabilities add column if not exists term_months numeric;
+
 -- 자산군별 목표 비중 (리밸런싱용)
 create table if not exists public.allocation_targets (
   id uuid primary key default gen_random_uuid(),

@@ -97,6 +97,7 @@ export function DataProvider({ children }) {
       name: form.name.trim(),
       amount: Number(form.amount) || 0,
       interest_rate: form.interestRate === "" || form.interestRate === undefined ? null : Number(form.interestRate),
+      term_months: form.termMonths === "" || form.termMonths === undefined ? null : Number(form.termMonths),
       memo: (form.memo || "").trim(),
     });
     if (err) { setError("부채 추가에 실패했어요."); return; }
@@ -111,6 +112,7 @@ export function DataProvider({ children }) {
         name: form.name.trim(),
         amount: Number(form.amount) || 0,
         interest_rate: form.interestRate === "" || form.interestRate === undefined ? null : Number(form.interestRate),
+        term_months: form.termMonths === "" || form.termMonths === undefined ? null : Number(form.termMonths),
         memo: (form.memo || "").trim(),
       })
       .eq("id", id);

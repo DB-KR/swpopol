@@ -1,7 +1,7 @@
 import React from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { LayoutDashboard, ClipboardList, Wallet, Briefcase, Scale, LineChart, Settings as SettingsIcon, LogOut, X } from "lucide-react";
+import { LayoutDashboard, ClipboardList, Wallet, Briefcase, Scale, LineChart, Settings as SettingsIcon, LogOut, X, Moon, Sun } from "lucide-react";
 
 const MENU_GROUPS = [
   {
@@ -28,7 +28,7 @@ const MENU_GROUPS = [
   },
 ];
 
-export default function Sidebar({ open, onClose, onLogout, userEmail }) {
+export default function Sidebar({ open, onClose, onLogout, userEmail, theme, toggleTheme }) {
   const location = useLocation();
 
   return (
@@ -78,6 +78,9 @@ export default function Sidebar({ open, onClose, onLogout, userEmail }) {
 
         <div className="sidebar-foot">
           {userEmail && <span className="sidebar-email">{userEmail}</span>}
+          <button className="link-btn" onClick={toggleTheme}>
+            {theme === "dark" ? <Sun size={13} /> : <Moon size={13} />} {theme === "dark" ? "라이트 모드" : "다크 모드"}
+          </button>
           <button className="link-btn" onClick={onLogout}>
             <LogOut size={13} /> 로그아웃
           </button>

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useData } from "../context/DataContext";
 import { supabase } from "../lib/supabase";
-import { formatManwon, formatPct } from "../lib/format";
+import { formatManwon, formatPct, computeAnnualReport } from "../lib/format";
 import { useFxRates } from "../lib/useFxRates";
 import { CumulativeReturnChart, MarketIndexChart } from "../components/charts";
 
@@ -59,6 +59,8 @@ export default function Performance() {
   const latestSP500 = [...indices].reverse().find((r) => r.symbol === "SP500");
   const latestKOSPI = [...indices].reverse().find((r) => r.symbol === "KOSPI");
 
+  const annualReport = computeAnnualReport(snapshots);
+
   if (loading) return <div className="loading-screen">불러오는 중…</div>;
 
   return (
@@ -105,6 +107,37 @@ export default function Performance() {
                 {priceContrib + fxContrib >= 0 ? "+" : ""}{formatManwon(priceContrib + fxContrib)}
               </span>
             </div>
+          </div>
+        )}
+      </div>
+
+      <div className="card">
+        <div className="card-head">
+          <h2>연간 리포트</h2>
+          <span className="card-sub">연말 스냅샷 기준 전년대비 증감</span>
+        </div>
+        {annualReport.length === 0 ? (
+          <div className="empty-state">
+            <div className="empty-ring" />
+            <p>연도별 스냅샷이 쌓이면 전년대비 증감이 표시돼요.</p>
+          </div>
+        ) : (
+          <div className="rebalance-table">
+            <div className="rebalance-row rebalance-head">
+              <span>연도</span><span className="num">연말 자산</span><span className="num">전년대비</span><span className="num">부동산/금융</span>
+            </div>
+            {[...annualReport].reverse().map((r) => (
+              <div className="rebalance-row" key={r.year}>
+                <span>{r.year}년</span>
+                <span className="num">{formatManwon(r.total)}</span>
+                <span className={`num ${r.yoyPct === null ? "muted" : r.yoyPct >= 0 ? "pos" : "neg"}`}>
+                  {r.yoyPct === null ? "-" : formatPct(r.yoyPct)}
+                </span>
+                <span className="num muted" style={{ fontSize: 11 }}>
+                  {r.realEstateYoyPct === null ? "-" : formatPct(r.realEstateYoyPct, 0)} / {r.financialYoyPct === null ? "-" : formatPct(r.financialYoyPct, 0)}
+                </span>
+              </div>
+            ))}
           </div>
         )}
       </div>

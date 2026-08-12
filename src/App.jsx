@@ -3,6 +3,7 @@ import { HashRouter, Routes, Route, useLocation, Navigate } from "react-router-d
 import { AnimatePresence, motion } from "framer-motion";
 import { Menu } from "lucide-react";
 import { supabase } from "./lib/supabase";
+import { useTheme } from "./lib/useTheme";
 import { DataProvider } from "./context/DataContext";
 import Sidebar from "./components/Sidebar";
 import Login from "./components/Login";
@@ -45,7 +46,7 @@ function AnimatedRoutes() {
   );
 }
 
-function Shell() {
+function Shell({ theme, toggleTheme }) {
   const [session, setSession] = useState(undefined);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -71,6 +72,8 @@ function Shell() {
           onClose={() => setSidebarOpen(false)}
           onLogout={() => supabase.auth.signOut()}
           userEmail={session.user.email}
+          theme={theme}
+          toggleTheme={toggleTheme}
         />
         <div className="topbar">
           <button className="icon-btn" onClick={() => setSidebarOpen(true)} aria-label="메뉴 열기">
@@ -87,9 +90,10 @@ function Shell() {
 }
 
 export default function App() {
+  const { theme, toggleTheme } = useTheme();
   return (
     <HashRouter>
-      <Shell />
+      <Shell theme={theme} toggleTheme={toggleTheme} />
     </HashRouter>
   );
 }

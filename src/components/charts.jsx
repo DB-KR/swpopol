@@ -385,3 +385,38 @@ export function MarketIndexChart({ data }) {
     </ResponsiveContainer>
   );
 }
+
+function SavingsRateTooltip({ active, payload, label }) {
+  if (!active || !payload || !payload.length) return null;
+  return (
+    <div className="chart-tt">
+      <div className="chart-tt-label">{formatMonthLabel(label)}</div>
+      <div className="chart-tt-row">
+        <span>저축률</span>
+        <span>{formatPct(payload[0].value)}</span>
+      </div>
+    </div>
+  );
+}
+
+export function SavingsRateChart({ data }) {
+  if (data.length === 0) {
+    return (
+      <div className="empty-state">
+        <div className="empty-ring" />
+        <p>월별 수입·지출을 2개월 이상 기록하면 추이가 보여요.</p>
+      </div>
+    );
+  }
+  return (
+    <ResponsiveContainer width="100%" height={200}>
+      <LineChart data={data} margin={{ top: 10, right: 16, left: 0, bottom: 0 }}>
+        <CartesianGrid strokeDasharray="2 4" stroke="var(--line)" vertical={false} />
+        <XAxis dataKey="month" tickFormatter={formatMonthLabel} tick={{ fontFamily: "IBM Plex Mono", fontSize: 11, fill: "var(--ink-soft)" }} axisLine={{ stroke: "var(--line)" }} tickLine={false} />
+        <YAxis tickFormatter={(v) => `${v}%`} width={48} tick={{ fontFamily: "IBM Plex Mono", fontSize: 10, fill: "var(--ink-soft)" }} axisLine={false} tickLine={false} />
+        <Tooltip content={<SavingsRateTooltip />} />
+        <Line type="monotone" dataKey="rate" stroke="var(--gold)" strokeWidth={2.5} dot={{ r: 3, fill: "var(--gold)" }} activeDot={{ r: 6 }} animationDuration={700} />
+      </LineChart>
+    </ResponsiveContainer>
+  );
+}

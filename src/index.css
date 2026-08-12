@@ -1,4 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@600;700&family=Noto+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 
 :root {
   --paper: #EEF0E7;
@@ -12,6 +13,20 @@
   --sidebar-w: 232px;
 }
 
+body.dark {
+  --paper: #14181F;
+  --card-bg: #1B212B;
+  --ink: #EDEFE9;
+  --ink-soft: #96A0AD;
+  --line: #303847;
+  --stamp-red: #E1685A;
+  --growth-green: #4CAF7D;
+  --gold: #D4A96A;
+}
+
+body.dark .stamp { mix-blend-mode: normal; }
+body.dark .chart-tt { box-shadow: 2px 2px 0 var(--line); }
+
 * , *::before, *::after { box-sizing: border-box; }
 
 html, body, #root { height: 100%; }
@@ -20,7 +35,8 @@ body {
   margin: 0;
   background: var(--paper);
   color: var(--ink);
-  font-family: 'Noto Sans KR', sans-serif;
+  font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 button, input, select { font-family: inherit; }
@@ -41,7 +57,7 @@ a { color: inherit; }
   background: var(--card-bg);
   border-bottom: 1px solid var(--line);
 }
-.topbar-title { font-family: 'Noto Serif KR', serif; font-weight: 700; font-size: 16px; }
+.topbar-title { font-family: 'Pretendard Variable', Pretendard, sans-serif; font-weight: 700; font-size: 16px; }
 
 .main {
   margin-left: var(--sidebar-w);
@@ -64,7 +80,7 @@ a { color: inherit; }
   z-index: 30;
 }
 .sidebar-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 28px; }
-.sidebar-head h1 { font-family: 'Noto Serif KR', serif; font-size: 19px; font-weight: 700; margin: 4px 0 0; }
+.sidebar-head h1 { font-family: 'Pretendard Variable', Pretendard, sans-serif; font-size: 19px; font-weight: 700; margin: 4px 0 0; }
 .sidebar-close { display: none; background: none; border: none; color: var(--ink-soft); cursor: pointer; }
 
 .sidebar-nav { display: flex; flex-direction: column; gap: 20px; flex: 1; }
@@ -81,7 +97,8 @@ a { color: inherit; }
   z-index: 1;
   transition: color 0.2s ease;
 }
-.sidebar-link.active, .sidebar-link:hover { color: var(--paper); }
+.sidebar-link.active { color: var(--paper); }
+.sidebar-link:hover:not(.active) { background: color-mix(in srgb, var(--ink) 8%, transparent); color: var(--ink); }
 .active-pill { position: absolute; inset: 0; background: var(--ink); border-radius: 6px; z-index: -1; }
 
 .sidebar-foot { display: flex; flex-direction: column; gap: 8px; padding-top: 16px; border-top: 1px dashed var(--line); }
@@ -114,7 +131,7 @@ a { color: inherit; }
 /* Login */
 .login-screen { min-height: 100%; display: flex; align-items: center; justify-content: center; padding: 24px; }
 .login-card { background: var(--card-bg); border: 1px solid var(--line); border-radius: 8px; padding: 32px 30px; max-width: 380px; width: 100%; display: flex; flex-direction: column; gap: 10px; }
-.login-card h1 { font-family: 'Noto Serif KR', serif; font-size: 24px; margin: 4px 0 8px; }
+.login-card h1 { font-family: 'Pretendard Variable', Pretendard, sans-serif; font-size: 24px; margin: 4px 0 8px; }
 .login-copy { font-size: 13px; color: var(--ink-soft); margin: 0 0 10px; }
 .login-form { display: flex; flex-direction: column; gap: 10px; }
 .login-form input { font-size: 14px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 4px; background: var(--paper); color: var(--ink); }
@@ -126,7 +143,7 @@ a { color: inherit; }
 .hero::before { content: ""; position: absolute; left: 0; top: 14px; bottom: 14px; width: 3px; background-image: repeating-linear-gradient(to bottom, var(--line) 0 4px, transparent 4px 9px); }
 .hero-top { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 8px; }
 .eyebrow { font-family: 'IBM Plex Mono'; font-size: 11px; letter-spacing: 2px; color: var(--ink-soft); }
-.hero h1 { font-family: 'Noto Serif KR', serif; font-size: 24px; margin: 4px 0 0; font-weight: 700; }
+.hero h1 { font-family: 'Pretendard Variable', Pretendard, sans-serif; font-size: 24px; margin: 4px 0 0; font-weight: 700; }
 .hero-main { margin-top: 20px; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 16px; }
 .hero-total { display: flex; flex-direction: column; gap: 4px; }
 .hero-total-label { font-size: 12px; color: var(--ink-soft); letter-spacing: 1px; }
@@ -145,7 +162,7 @@ a { color: inherit; }
 
 .card { background: var(--card-bg); border: 1px solid var(--line); border-radius: 6px; padding: 20px 22px 22px; }
 .card-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
-.card-head h2 { font-family: 'Noto Serif KR', serif; font-size: 16px; font-weight: 700; margin: 0; }
+.card-head h2 { font-family: 'Pretendard Variable', Pretendard, sans-serif; font-size: 16px; font-weight: 700; margin: 0; }
 .card-sub { font-size: 12px; color: var(--ink-soft); display: inline-flex; align-items: center; gap: 4px; }
 
 /* Donut */
@@ -310,7 +327,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
   outline: 1px solid var(--stamp-red); outline-offset: -5px;
   color: var(--stamp-red);
   display: flex; align-items: center; justify-content: center;
-  font-family: 'Noto Serif KR', serif; font-weight: 700; font-size: 12px;
+  font-family: 'Pretendard Variable', Pretendard, sans-serif; font-weight: 700; font-size: 12px;
   mix-blend-mode: multiply;
   text-align: center;
   flex-shrink: 0;
