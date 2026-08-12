@@ -460,11 +460,15 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
 .muted { color: var(--ink-soft); }
 .row-actions { display: flex; gap: 4px; justify-content: flex-end; }
 .tag { font-size: 11px; border: 1px solid; border-radius: 6px; padding: 2px 6px; white-space: nowrap; }
-.return-detail { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 2px 12px; margin-top: -6px; border-bottom: 1px solid var(--line); }
+.return-detail { padding: 0 2px 12px 30px; margin-top: -6px; border-bottom: 1px solid var(--line); }
+.return-detail-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.return-detail-row + .return-detail-row { margin-top: 6px; }
 .return-chip { font-family: 'IBM Plex Mono'; font-size: 11px; background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 3px 9px; display: inline-flex; align-items: center; gap: 4px; color: var(--ink-soft); }
 .return-chip.pos { color: var(--growth-green); border-color: var(--growth-green); }
 .return-chip.neg { color: var(--stamp-red); border-color: var(--stamp-red); }
-.return-chip.strong { font-weight: 600; background: var(--card-bg); }
+.return-chip.strong { font-weight: 700; font-size: 11.5px; background: var(--card-bg); }
+.return-chip.strong.pos { background: color-mix(in srgb, var(--growth-green) 14%, var(--card-bg)); border-color: var(--growth-green); }
+.return-chip.strong.neg { background: color-mix(in srgb, var(--stamp-red) 14%, var(--card-bg)); border-color: var(--stamp-red); }
 
 /* Chart tooltip */
 .chart-tt { background: var(--card-bg); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; font-size: 12px; box-shadow: var(--shadow-card); }
@@ -523,5 +527,6 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
     gap: 10px;
     justify-content: flex-start;
   }
+  .return-detail { padding-left: 14px; }
   .ledger-row:hover, .rebalance-row:hover, .holdings-row:hover, .expense-compare-row:hover { background: var(--accent-soft); }
 }

@@ -205,18 +205,20 @@ function LiabilityAmortizationDetail({ liability }) {
 
   return (
     <div className="return-detail">
-      <span className="return-chip strong">
-        월 상환액 {formatManwon(a.monthlyPayment)}
-      </span>
-      <span className="return-chip neg">
-        총 이자 {formatManwon(a.totalInterest)}
-      </span>
-      <span className="return-chip">
-        총 상환액 {formatManwon(a.totalPayment)}
-      </span>
-      <span className="return-chip muted">
-        예상 완제 {a.payoffDate.getFullYear()}.{String(a.payoffDate.getMonth() + 1).padStart(2, "0")}
-      </span>
+      <div className="return-detail-row">
+        <span className="return-chip strong">
+          월 상환액 {formatManwon(a.monthlyPayment)}
+        </span>
+        <span className="return-chip strong neg">
+          총 이자 {formatManwon(a.totalInterest)}
+        </span>
+        <span className="return-chip">
+          총 상환액 {formatManwon(a.totalPayment)}
+        </span>
+        <span className="return-chip muted">
+          예상 완제 {a.payoffDate.getFullYear()}.{String(a.payoffDate.getMonth() + 1).padStart(2, "0")}
+        </span>
+      </div>
     </div>
   );
 }
@@ -224,35 +226,39 @@ function LiabilityAmortizationDetail({ liability }) {
 function AssetReturnDetail({ asset, returns: r, fxLoading }) {
   return (
     <div className="return-detail">
-      <span className="return-chip">
-        {asset.buy_date && `${formatDate(asset.buy_date)} · `}
-        {formatCurrencyAmount(r.buy, asset.currency)} → {formatCurrencyAmount(r.sell, asset.currency)}
-      </span>
-      <span className={`return-chip ${r.priceReturnPct >= 0 ? "pos" : "neg"}`}>
-        {r.priceReturnPct >= 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />} 가격 {formatPct(r.priceReturnPct)}
-      </span>
-      {r.isForeign && (
-        r.fxReturnPct !== null ? (
-          <span className={`return-chip ${r.fxReturnPct >= 0 ? "pos" : "neg"}`}>
-            환율 {formatPct(r.fxReturnPct)} (현재 {r.currentFxRate.toFixed(1)}원)
+      <div className="return-detail-row">
+        <span className="return-chip">
+          {asset.buy_date && `${formatDate(asset.buy_date)} · `}
+          {formatCurrencyAmount(r.buy, asset.currency)} → {formatCurrencyAmount(r.sell, asset.currency)}
+        </span>
+        <span className={`return-chip ${r.priceReturnPct >= 0 ? "pos" : "neg"}`}>
+          {r.priceReturnPct >= 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />} 가격 {formatPct(r.priceReturnPct)}
+        </span>
+        {r.isForeign && (
+          r.fxReturnPct !== null ? (
+            <span className={`return-chip ${r.fxReturnPct >= 0 ? "pos" : "neg"}`}>
+              환율 {formatPct(r.fxReturnPct)} (현재 {r.currentFxRate.toFixed(1)}원)
+            </span>
+          ) : (
+            <span className="return-chip muted">{fxLoading ? "환율 조회 중…" : "환율 정보 없음"}</span>
+          )
+        )}
+      </div>
+      <div className="return-detail-row">
+        <span className={`return-chip strong ${r.totalReturnPct >= 0 ? "pos" : "neg"}`}>
+          총수익률 {formatPct(r.totalReturnPct)}
+        </span>
+        {r.annualizedReturnPct !== null && (
+          <span className={`return-chip strong ${r.annualizedReturnPct >= 0 ? "pos" : "neg"}`}>
+            연평균 {formatPct(r.annualizedReturnPct)} ({Math.round(r.holdingDays)}일 보유)
           </span>
-        ) : (
-          <span className="return-chip muted">{fxLoading ? "환율 조회 중…" : "환율 정보 없음"}</span>
-        )
-      )}
-      <span className={`return-chip strong ${r.totalReturnPct >= 0 ? "pos" : "neg"}`}>
-        총수익률 {formatPct(r.totalReturnPct)}
-      </span>
-      {r.annualizedReturnPct !== null && (
-        <span className={`return-chip strong ${r.annualizedReturnPct >= 0 ? "pos" : "neg"}`}>
-          연평균 {formatPct(r.annualizedReturnPct)} ({Math.round(r.holdingDays)}일 보유)
-        </span>
-      )}
-      {r.gainManwon !== null && (
-        <span className={`return-chip strong ${r.gainManwon >= 0 ? "pos" : "neg"}`}>
-          평가손익 {r.gainManwon >= 0 ? "+" : ""}{formatManwon(r.gainManwon)}
-        </span>
-      )}
+        )}
+        {r.gainManwon !== null && (
+          <span className={`return-chip strong ${r.gainManwon >= 0 ? "pos" : "neg"}`}>
+            평가손익 {r.gainManwon >= 0 ? "+" : ""}{formatManwon(r.gainManwon)}
+          </span>
+        )}
+      </div>
     </div>
   );
 }
