@@ -252,6 +252,14 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
 .tab-btn.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
 
 .month-select { font-family: 'IBM Plex Mono'; font-size: 12px; color: var(--ink); background: var(--paper); border: 1px solid var(--line); border-radius: 4px; padding: 5px 8px; cursor: pointer; }
+
+.expense-compare { margin-top: 16px; border-top: 1px solid var(--line); padding-top: 10px; }
+.expense-compare-row { display: grid; grid-template-columns: 1fr 90px 90px 100px; align-items: center; gap: 8px; padding: 8px 2px; border-bottom: 1px dashed var(--line); font-size: 13px; }
+.expense-compare-head { font-size: 11px; color: var(--ink-soft); border-bottom: 1px solid var(--line); padding-bottom: 8px; }
+@media (max-width: 640px) {
+  .expense-compare-row { grid-template-columns: 1fr 1fr; row-gap: 4px; }
+  .expense-compare-head { display: none; }
+}
 .form-hint { font-size: 12px; color: var(--ink-soft); margin: -2px 0 0; }
 .form-hint.pos { color: var(--growth-green); }
 .form-hint.neg { color: var(--stamp-red); }

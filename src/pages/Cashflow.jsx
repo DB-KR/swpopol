@@ -59,6 +59,29 @@ export default function Cashflow() {
       .sort((a, b) => b.value - a.value);
   })();
 
+  const prevExpenseSums = (() => {
+    if (!prevMonthData) return {};
+    const sums = {};
+    effectiveItems
+      .filter((it) => it.type === "expense" && it.month === prevMonthData.month && matchesFilter(it, filterMode))
+      .forEach((it) => { sums[it.category] = (sums[it.category] || 0) + Number(it.amount || 0); });
+    return sums;
+  })();
+
+  const expenseComparison = (() => {
+    if (!prevMonthData) return [];
+    const keys = new Set([...expenseAllocation.map((c) => c.key), ...Object.keys(prevExpenseSums)]);
+    return [...keys]
+      .map((key) => {
+        const cat = getExpenseCategory(key);
+        const current = expenseAllocation.find((c) => c.key === key)?.value || 0;
+        const prev = prevExpenseSums[key] || 0;
+        return { key, label: cat.label, color: cat.color, current, prev, diff: current - prev };
+      })
+      .filter((r) => r.current > 0 || r.prev > 0)
+      .sort((a, b) => b.current - a.current);
+  })();
+
   const itemsSorted = effectiveItems
     .filter((it) => matchesFilter(it, filterMode))
     .sort((a, b) => b.month.localeCompare(a.month) || String(b.created_at).localeCompare(String(a.created_at)));
@@ -126,6 +149,29 @@ export default function Cashflow() {
           </p>
         )}
         <ExpenseBreakdown allocation={expenseAllocation} />
+
+        {expenseComparison.length > 0 && (
+          <div className="expense-compare">
+            <div className="expense-compare-row expense-compare-head">
+              <span>카테고리</span>
+              <span className="num">{formatMonthLabel(displayMonth)}</span>
+              <span className="num">{formatMonthLabel(prevMonthData.month)}</span>
+              <span className="num">증감</span>
+            </div>
+            {expenseComparison.map((r) => (
+              <div className="expense-compare-row" key={r.key}>
+                <span>
+                  <span className="tag" style={{ color: r.color, borderColor: r.color }}>{r.label}</span>
+                </span>
+                <span className="num">{formatManwon(r.current)}</span>
+                <span className="num muted">{formatManwon(r.prev)}</span>
+                <span className={`num ${r.diff > 0 ? "neg" : r.diff < 0 ? "pos" : "muted"}`}>
+                  {r.diff === 0 ? "-" : `${r.diff > 0 ? "+" : ""}${formatManwon(r.diff)}`}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="card">
