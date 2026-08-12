@@ -236,6 +236,10 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
 .form-hint.pos { color: var(--growth-green); }
 .form-hint.neg { color: var(--stamp-red); }
 
+.toggle-chip { display: inline-flex; align-items: center; gap: 6px; background: var(--paper); border: 1px solid var(--ink); border-radius: 20px; padding: 7px 14px; font-size: 13px; font-weight: 500; color: var(--ink); cursor: pointer; }
+.toggle-chip:hover { background: var(--card-bg); }
+.toggle-chip-plus { font-size: 15px; line-height: 1; }
+
 .rebalance-table { display: flex; flex-direction: column; }
 .rebalance-row { display: grid; grid-template-columns: 1fr 100px 100px 100px; align-items: center; gap: 8px; padding: 10px 2px; border-bottom: 1px dashed var(--line); font-size: 13px; }
 .rebalance-row.cols-3 { grid-template-columns: 1fr 100px 120px; }

@@ -63,8 +63,8 @@ export function AssetForm({ initial, onSubmit, onCancel }) {
       </div>
 
       {!showReturns ? (
-        <button type="button" className="link-btn" onClick={() => setShowReturns(true)}>
-          + 수량·매수가·매도가·수익률 기록하기 (선택)
+        <button type="button" className="toggle-chip" onClick={() => setShowReturns(true)}>
+          <span className="toggle-chip-plus">+</span> 매수 정보 추가로 입력하기(수량/매수가/매도가 기록하기)
         </button>
       ) : (
         <>
