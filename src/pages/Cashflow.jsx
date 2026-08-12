@@ -13,7 +13,7 @@ function matchesFilter(it, mode) {
 }
 
 export default function Cashflow() {
-  const { liabilities, cashflowItems, loading, addCashflowItem, updateCashflowItem, deleteCashflowItem } = useData();
+  const { liabilities, cashflowItems, loading, error, addCashflowItem, updateCashflowItem, deleteCashflowItem } = useData();
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [filterMode, setFilterMode] = useState("all"); // all | recurring | single
@@ -67,6 +67,8 @@ export default function Cashflow() {
 
   return (
     <div className="page">
+      {error && <div className="error-banner">{error}</div>}
+
       <div className="card">
         <div className="card-head">
           <h2>월별 현금흐름 · 저축률</h2>

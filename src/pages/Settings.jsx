@@ -66,6 +66,8 @@ export default function Settings() {
 
     if (result.success) {
       setStatus({ type: "success", message: "복원이 완료됐어요." });
+    } else {
+      setStatus({ type: "error", message: "복원 중 오류가 발생했어요. 일부만 반영됐을 수 있으니 데이터를 확인해주세요." });
     }
   }
 

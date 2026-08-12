@@ -8,7 +8,7 @@ import { useFxRates } from "../lib/useFxRates";
 
 export default function Assets() {
   const {
-    assets, liabilities, loading,
+    assets, liabilities, loading, error,
     addAsset, updateAsset, deleteAsset,
     addLiability, updateLiability, deleteLiability,
   } = useData();
@@ -28,6 +28,8 @@ export default function Assets() {
 
   return (
     <div className="page">
+      {error && <div className="error-banner">{error}</div>}
+
       <div className="card">
         <div className="card-head">
           <h2>순자산 요약</h2>

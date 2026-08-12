@@ -55,7 +55,7 @@ function AllocationTargetForm({ initialTargets, onSubmit, onCancel }) {
 }
 
 export default function Rebalance() {
-  const { assets, allocationTargets, loading, saveAllocationTargets } = useData();
+  const { assets, allocationTargets, loading, error, saveAllocationTargets } = useData();
   const [showForm, setShowForm] = useState(false);
   const [contribution, setContribution] = useState("");
 
@@ -89,6 +89,8 @@ export default function Rebalance() {
 
   return (
     <div className="page">
+      {error && <div className="error-banner">{error}</div>}
+
       <div className="card">
         <div className="card-head">
           <h2>목표 비중</h2>
