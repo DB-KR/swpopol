@@ -6,9 +6,9 @@ export default function Stamp({ text }) {
     <motion.div
       className="stamp"
       aria-hidden="true"
-      initial={{ opacity: 0, scale: 1.6, rotate: -9 }}
-      animate={{ opacity: 0.9, scale: 1, rotate: -9 }}
-      transition={{ duration: 0.35, ease: "easeOut" }}
+      initial={{ opacity: 0, scale: 0.6 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
     >
       <span>{text}</span>
     </motion.div>
