@@ -60,7 +60,7 @@ function CashflowTooltip({ active, payload, label }) {
   );
 }
 
-export function AllocationDonut({ allocation, totalAssets }) {
+export function AllocationDonut({ allocation, totalAssets, centerLabel = "총자산" }) {
   if (allocation.length === 0) {
     return (
       <div className="empty-state">
@@ -91,7 +91,7 @@ export function AllocationDonut({ allocation, totalAssets }) {
           </PieChart>
         </ResponsiveContainer>
         <div className="donut-center">
-          <span className="donut-center-label">총자산</span>
+          <span className="donut-center-label">{centerLabel}</span>
           <span className="donut-center-value">{formatManwon(totalAssets)}</span>
         </div>
       </div>

@@ -2,8 +2,9 @@ import React from "react";
 import { TrendingUp, TrendingDown } from "lucide-react";
 import { useData } from "../context/DataContext";
 import { formatManwon, formatCurrencyAmount, formatPct, computeAssetReturns } from "../lib/format";
+import { getYearColor } from "../lib/constants";
 import { useFxRates } from "../lib/useFxRates";
-import { HoldingsBar } from "../components/charts";
+import { AllocationDonut } from "../components/charts";
 
 export default function Holdings() {
   const { assets, loading } = useData();
@@ -13,6 +14,17 @@ export default function Holdings() {
   const { rates: fxRates } = useFxRates(foreignCurrencies);
 
   const totalValue = stocks.reduce((s, a) => s + Number(a.value || 0), 0);
+
+  const stockAllocation = stocks
+    .map((a, i) => ({
+      key: a.id,
+      label: a.name,
+      color: getYearColor(i),
+      value: Number(a.value || 0),
+      pct: totalValue > 0 ? (Number(a.value || 0) / totalValue) * 100 : 0,
+    }))
+    .filter((c) => c.value > 0)
+    .sort((a, b) => b.value - a.value);
 
   if (loading) return <div className="loading-screen">불러오는 중…</div>;
 
@@ -69,7 +81,7 @@ export default function Holdings() {
           <h2>종목별 비중</h2>
           <span className="card-sub">평가금액 기준</span>
         </div>
-        <HoldingsBar assets={stocks} />
+        <AllocationDonut allocation={stockAllocation} totalAssets={totalValue} centerLabel="주식 평가금액" />
       </div>
     </div>
   );
