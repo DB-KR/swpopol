@@ -11,6 +11,7 @@ import { GoalForm, SnapshotForm } from "../components/forms";
 import MiniCalendar from "../components/MiniCalendar";
 import MacroCalendarWidget, { getMacroEventDaysForMonth } from "../components/MacroCalendarWidget";
 import NewsLinksWidget from "../components/NewsLinksWidget";
+import MarketIndexTicker from "../components/MarketIndexTicker";
 import Stamp from "../components/Stamp";
 import PageSkeleton from "../components/PageSkeleton";
 
@@ -156,6 +157,7 @@ export default function Overview() {
                 )}
               </div>
             </div>
+            <MarketIndexTicker />
           </div>
           <div className="hero-market-info">
             <div className="market-info-col">
