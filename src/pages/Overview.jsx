@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import { TrendingUp, TrendingDown, Target, Check, Pencil, Plus, Trash2 } from "lucide-react";
+import { TrendingUp, TrendingDown, Target, Check, Circle, Pencil, Plus, Trash2, ArrowUpRight, ArrowDownRight, Layers, CreditCard } from "lucide-react";
 import { useData } from "../context/DataContext";
 import { CATEGORIES, ASSET_MILESTONES, getYearColor } from "../lib/constants";
-import { formatManwon, formatMonthLabel, formatPct, currentMonth, aggregateCashflowByMonth, computeGaugeSegments } from "../lib/format";
+import { formatManwon, formatMonthLabel, formatPct, formatDate, currentMonth, aggregateCashflowByMonth, computeGaugeSegments, computeAnnualReport } from "../lib/format";
 import { useCountUp } from "../lib/useCountUp";
 import { useFxRates } from "../lib/useFxRates";
 import { AllocationDonut, HoldingsBar, TrendArea } from "../components/charts";
@@ -93,6 +93,39 @@ export default function Overview() {
     .map((c) => ({ ...c, value: sums[c.key] || 0, pct: allocTotal > 0 ? ((sums[c.key] || 0) / allocTotal) * 100 : 0 }))
     .filter((c) => c.value > 0);
 
+  // 핵심 지표 미니카드용
+  const thisYearYoyPct = (() => {
+    const report = computeAnnualReport(snapshots);
+    const cur = report.find((r) => r.year === String(new Date().getFullYear()));
+    return cur ? cur.yoyPct : null;
+  })();
+  const latestMonthCashflow = monthlyCashflow.length > 0 ? monthlyCashflow[monthlyCashflow.length - 1] : null;
+  const monthlySavingsAmt = latestMonthCashflow ? latestMonthCashflow.income - latestMonthCashflow.expense : null;
+
+  // 이달의 할 일
+  const hasCashflowThisMonth = cashflowItems.some((c) => c.month === currentMonth());
+  const todos = [
+    { key: "snapshot", label: "이번 달 스냅샷 기록", done: hasSnapshotThisMonth, action: handleQuickSnapshot, actionLabel: "지금 기록" },
+    { key: "cashflow", label: "이번 달 현금흐름 기록", done: hasCashflowThisMonth, href: "#/cashflow", actionLabel: "기록하러 가기" },
+    { key: "goal", label: "목표 설정", done: !!goal, action: () => setShowGoalForm(true), actionLabel: "설정하기" },
+  ];
+
+  // 최근 활동 피드
+  const recentActivity = [
+    ...assets.map((a) => ({ id: `a-${a.id}`, type: "asset", text: `자산 추가 · ${a.name}`, amount: a.value, date: a.created_at })),
+    ...liabilities.map((l) => ({ id: `l-${l.id}`, type: "liability", text: `부채 추가 · ${l.name}`, amount: -l.amount, date: l.created_at })),
+    ...cashflowItems.map((c) => ({
+      id: `c-${c.id}`,
+      type: c.type,
+      text: `${c.type === "income" ? "수입" : "지출"} 기록 · ${c.memo || formatMonthLabel(c.month)}`,
+      amount: c.type === "income" ? c.amount : -c.amount,
+      date: c.created_at,
+    })),
+  ]
+    .filter((it) => it.date)
+    .sort((a, b) => new Date(b.date) - new Date(a.date))
+    .slice(0, 6);
+
   async function handleQuickSnapshot() {
     await saveSnapshot(currentMonth(), totalAssets, realEstateTotal, financialTotal);
     setJustSnapshotted(true);
@@ -126,9 +159,48 @@ export default function Overview() {
             {fxRates.USD && <span className="pill">원/달러 {fxRates.USD.toLocaleString("ko-KR", { maximumFractionDigits: 1 })}원</span>}
           </div>
         </div>
+        <div className="hero-stats">
+          <div className="hero-stat">
+            <span className="hero-stat-label">목표까지</span>
+            <span className="hero-stat-value">{daysLeft === null ? "-" : daysLeft >= 0 ? `D-${daysLeft}` : `${Math.abs(daysLeft)}일 지남`}</span>
+          </div>
+          <div className="hero-stat">
+            <span className="hero-stat-label">올해 순자산 증가율</span>
+            <span className={`hero-stat-value ${thisYearYoyPct === null ? "" : thisYearYoyPct >= 0 ? "pos" : "neg"}`}>
+              {thisYearYoyPct === null ? "-" : formatPct(thisYearYoyPct)}
+            </span>
+          </div>
+          <div className="hero-stat">
+            <span className="hero-stat-label">이번 달 순저축액</span>
+            <span className={`hero-stat-value ${monthlySavingsAmt === null ? "" : monthlySavingsAmt >= 0 ? "pos" : "neg"}`}>
+              {monthlySavingsAmt === null ? "-" : `${monthlySavingsAmt >= 0 ? "+" : ""}${formatManwon(monthlySavingsAmt)}`}
+            </span>
+          </div>
+        </div>
       </header>
 
       {error && <div className="error-banner">{error}</div>}
+
+      <div className="card">
+        <div className="card-head">
+          <h2>이달의 할 일</h2>
+        </div>
+        <div className="todo-list">
+          {todos.map((t) => (
+            <div className={`todo-item ${t.done ? "done" : ""}`} key={t.key}>
+              <span className="todo-check">{t.done ? <Check size={13} /> : <Circle size={13} />}</span>
+              <span className="todo-label">{t.label}</span>
+              {!t.done && (
+                t.href ? (
+                  <a className="link-btn" href={t.href}>{t.actionLabel}</a>
+                ) : (
+                  <button className="link-btn" onClick={t.action}>{t.actionLabel}</button>
+                )
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
 
       <div className="card">
         <div className="card-head">
@@ -238,6 +310,35 @@ export default function Overview() {
           </div>
           <HoldingsBar assets={assets} />
         </div>
+      </div>
+
+      <div className="card">
+        <div className="card-head">
+          <h2>최근 활동</h2>
+          <span className="card-sub">최근 추가된 항목</span>
+        </div>
+        {recentActivity.length === 0 ? (
+          <div className="empty-state">
+            <div className="empty-ring" />
+            <p>아직 활동 내역이 없어요.</p>
+          </div>
+        ) : (
+          <div className="activity-list">
+            {recentActivity.map((it) => {
+              const Icon = it.type === "asset" ? Layers : it.type === "liability" ? CreditCard : it.amount >= 0 ? ArrowUpRight : ArrowDownRight;
+              return (
+                <div className="activity-row" key={it.id}>
+                  <span className={`activity-icon ${it.amount >= 0 ? "pos" : "neg"}`}><Icon size={14} /></span>
+                  <span className="activity-text">{it.text}</span>
+                  <span className={`activity-amount ${it.amount >= 0 ? "pos" : "neg"}`}>
+                    {it.amount >= 0 ? "+" : ""}{formatManwon(it.amount)}
+                  </span>
+                  <span className="activity-date muted">{formatDate(it.date.slice(0, 10))}</span>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );

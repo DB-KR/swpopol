@@ -149,6 +149,12 @@ a { color: inherit; }
 .hero-total-label { font-size: 12px; color: var(--ink-soft); letter-spacing: 1px; }
 .hero-total-value { font-family: 'IBM Plex Mono'; font-size: 36px; font-weight: 600; line-height: 1.1; }
 .hero-breakdown { font-family: 'IBM Plex Mono'; font-size: 12px; color: var(--ink-soft); }
+
+.hero-stats { display: grid; grid-template-columns: repeat(3, minmax(110px, 1fr)); gap: 10px; margin-top: 18px; }
+.hero-stat { background: var(--paper); border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; display: flex; flex-direction: column; gap: 3px; }
+.hero-stat-label { font-size: 11px; color: var(--ink-soft); }
+.hero-stat-value { font-family: 'IBM Plex Mono'; font-size: 17px; font-weight: 600; }
+@media (max-width: 560px) { .hero-stats { grid-template-columns: 1fr; } }
 .hero-change { font-family: 'IBM Plex Mono'; font-size: 13px; display: inline-flex; align-items: center; gap: 4px; width: fit-content; }
 .hero-pills { display: flex; gap: 8px; flex-wrap: wrap; }
 .pill { font-family: 'IBM Plex Mono'; font-size: 12px; background: var(--paper); border: 1px solid var(--line); border-radius: 20px; padding: 6px 12px; }
@@ -189,10 +195,34 @@ a { color: inherit; }
 .btn-primary:disabled { opacity: 0.6; cursor: default; }
 .btn-ghost { font-size: 13px; background: transparent; color: var(--ink-soft); border: 1px solid var(--line); border-radius: 4px; padding: 9px 14px; cursor: pointer; }
 .btn-ghost:hover { color: var(--ink); border-color: var(--ink-soft); }
-.link-btn { font-size: 12px; background: none; border: none; color: var(--ink-soft); display: inline-flex; align-items: center; gap: 4px; cursor: pointer; padding: 2px 0; }
+.link-btn { font-size: 12px; background: none; border: none; color: var(--ink-soft); display: inline-flex; align-items: center; gap: 4px; cursor: pointer; padding: 2px 0; text-decoration: none; }
 .link-btn:hover { color: var(--ink); }
 .icon-btn { background: none; border: none; color: var(--ink-soft); cursor: pointer; padding: 4px; display: inline-flex; }
 .icon-btn:hover { color: var(--stamp-red); }
+
+/* Todo checklist */
+.todo-list { display: flex; flex-direction: column; }
+.todo-item { display: flex; align-items: center; gap: 10px; padding: 9px 2px; border-bottom: 1px dashed var(--line); font-size: 13px; }
+.todo-item:last-child { border-bottom: none; }
+.todo-check { width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid var(--line); display: inline-flex; align-items: center; justify-content: center; color: var(--ink-soft); flex-shrink: 0; }
+.todo-item.done .todo-check { border-color: var(--growth-green); background: var(--growth-green); color: #fff; }
+.todo-item.done .todo-label { color: var(--ink-soft); text-decoration: line-through; }
+.todo-label { flex: 1; }
+
+/* Recent activity feed */
+.activity-list { display: flex; flex-direction: column; }
+.activity-row { display: grid; grid-template-columns: 28px 1fr auto auto; align-items: center; gap: 10px; padding: 9px 2px; border-bottom: 1px dashed var(--line); font-size: 13px; }
+.activity-row:last-child { border-bottom: none; }
+.activity-icon { width: 26px; height: 26px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; background: var(--paper); }
+.activity-icon.pos { color: var(--growth-green); }
+.activity-icon.neg { color: var(--stamp-red); }
+.activity-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.activity-amount { font-family: 'IBM Plex Mono'; font-size: 12px; font-weight: 600; }
+.activity-date { font-family: 'IBM Plex Mono'; font-size: 11px; white-space: nowrap; }
+@media (max-width: 640px) {
+  .activity-row { grid-template-columns: 24px 1fr; row-gap: 2px; }
+  .activity-date { grid-column: 2; }
+}
 
 button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
 
