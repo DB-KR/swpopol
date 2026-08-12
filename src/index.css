@@ -186,6 +186,18 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
 .form-row input, .form-row select { font-size: 13px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 4px; background: var(--paper); color: var(--ink); }
 .form-actions { display: flex; justify-content: flex-end; gap: 8px; }
 .form-hint { font-size: 12px; color: var(--ink-soft); margin: -2px 0 0; }
+.form-hint.pos { color: var(--growth-green); }
+.form-hint.neg { color: var(--stamp-red); }
+
+.rebalance-table { display: flex; flex-direction: column; }
+.rebalance-row { display: grid; grid-template-columns: 1fr 100px 100px 100px; align-items: center; gap: 8px; padding: 10px 2px; border-bottom: 1px dashed var(--line); font-size: 13px; }
+.rebalance-row.cols-3 { grid-template-columns: 1fr 100px 120px; }
+.rebalance-head { font-size: 11px; color: var(--ink-soft); border-bottom: 1px solid var(--line); padding-bottom: 8px; }
+.rebalance-row .strong { font-family: 'IBM Plex Mono'; font-weight: 600; }
+@media (max-width: 640px) {
+  .rebalance-row, .rebalance-head { grid-template-columns: 1fr 1fr; row-gap: 4px; }
+  .rebalance-head { display: none; }
+}
 
 .snapshot-actions { display: flex; align-items: center; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
 

@@ -6,6 +6,7 @@ const DataContext = createContext(null);
 export function DataProvider({ children }) {
   const [assets, setAssets] = useState([]);
   const [liabilities, setLiabilities] = useState([]);
+  const [allocationTargets, setAllocationTargets] = useState([]);
   const [snapshots, setSnapshots] = useState([]);
   const [goal, setGoal] = useState(null);
   const [cashflowItems, setCashflowItems] = useState([]);
@@ -15,20 +16,23 @@ export function DataProvider({ children }) {
   const refresh = useCallback(async () => {
     setLoading(true);
     try {
-      const [a, l, s, g, c] = await Promise.all([
+      const [a, l, t, s, g, c] = await Promise.all([
         supabase.from("assets").select("*").order("created_at", { ascending: true }),
         supabase.from("liabilities").select("*").order("created_at", { ascending: true }),
+        supabase.from("allocation_targets").select("*"),
         supabase.from("snapshots").select("*").order("month", { ascending: true }),
         supabase.from("goals").select("*").limit(1).maybeSingle(),
         supabase.from("cashflow_items").select("*").order("month", { ascending: true }),
       ]);
       if (a.error) throw a.error;
       if (l.error) throw l.error;
+      if (t.error) throw t.error;
       if (s.error) throw s.error;
       if (g.error) throw g.error;
       if (c.error) throw c.error;
       setAssets(a.data || []);
       setLiabilities(l.data || []);
+      setAllocationTargets(t.data || []);
       setSnapshots(s.data || []);
       setGoal(g.data || null);
       setCashflowItems(c.data || []);
@@ -120,6 +124,14 @@ export function DataProvider({ children }) {
     await refresh();
   }
 
+  async function saveAllocationTargets(targets) {
+    // targets: [{ category: 'stock', targetPct: 40 }, ...]
+    const rows = targets.map((t) => ({ category: t.category, target_pct: Number(t.targetPct) || 0 }));
+    const { error: err } = await supabase.from("allocation_targets").upsert(rows, { onConflict: "user_id,category" });
+    if (err) { setError("목표 비중 저장에 실패했어요."); return; }
+    await refresh();
+  }
+
   async function saveSnapshot(month, total, realEstateTotal = 0, financialTotal = 0) {
     const { error: err } = await supabase
       .from("snapshots")
@@ -180,9 +192,10 @@ export function DataProvider({ children }) {
   }
 
   const value = {
-    assets, liabilities, snapshots, goal, cashflowItems, loading, error, refresh,
+    assets, liabilities, allocationTargets, snapshots, goal, cashflowItems, loading, error, refresh,
     addAsset, updateAsset, deleteAsset,
     addLiability, updateLiability, deleteLiability,
+    saveAllocationTargets,
     saveSnapshot, deleteSnapshot,
     saveGoal,
     addCashflowItem, updateCashflowItem, deleteCashflowItem,
