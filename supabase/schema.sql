@@ -22,6 +22,15 @@ alter table public.assets add column if not exists buy_fx_rate numeric;
 alter table public.assets add column if not exists buy_date date;
 alter table public.assets add column if not exists quantity numeric;
 
+-- 사용자가 직접 정렬한 순서 (화살표 버튼으로 조정). 기존 행은 created_at 순으로 채워넣습니다.
+alter table public.assets add column if not exists sort_order integer;
+with ranked as (
+  select id, row_number() over (partition by user_id order by created_at) - 1 as rn
+  from public.assets
+  where sort_order is null
+)
+update public.assets a set sort_order = ranked.rn from ranked where a.id = ranked.id;
+
 create table if not exists public.liabilities (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
@@ -35,6 +44,15 @@ create table if not exists public.liabilities (
 
 -- 대출 상환 계산기용 남은 상환 개월 수
 alter table public.liabilities add column if not exists term_months numeric;
+
+-- 사용자가 직접 정렬한 순서 (화살표 버튼으로 조정). 기존 행은 created_at 순으로 채워넣습니다.
+alter table public.liabilities add column if not exists sort_order integer;
+with ranked as (
+  select id, row_number() over (partition by user_id order by created_at) - 1 as rn
+  from public.liabilities
+  where sort_order is null
+)
+update public.liabilities l set sort_order = ranked.rn from ranked where l.id = ranked.id;
 
 -- 자산군별 목표 비중 (리밸런싱용)
 create table if not exists public.allocation_targets (

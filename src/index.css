@@ -436,7 +436,11 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
 
 /* Ledger table */
 .ledger-table { display: flex; flex-direction: column; }
-.ledger-row { display: grid; grid-template-columns: 110px 1fr 1fr 130px 60px; align-items: center; gap: 8px; padding: 10px 2px; border-bottom: 1px solid var(--line); font-size: 13px; }
+.ledger-row { display: grid; grid-template-columns: 22px 110px 1fr 1fr 130px 60px; align-items: center; gap: 8px; padding: 10px 2px; border-bottom: 1px solid var(--line); font-size: 13px; }
+.reorder-btns { display: flex; flex-direction: column; gap: 1px; }
+.reorder-btn { background: none; border: none; padding: 0; color: var(--ink-soft); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.reorder-btn:hover:not(:disabled) { color: var(--accent); }
+.reorder-btn:disabled { color: var(--line); cursor: default; }
 .ledger-head { font-size: 11px; color: var(--ink-soft); border-bottom: 1px solid var(--line); padding-bottom: 8px; }
 .ledger-row-edit { padding: 6px 0; border-bottom: 1px solid var(--line); }
 .num { font-family: 'IBM Plex Mono'; text-align: right; }
@@ -513,6 +517,11 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
   .ledger-row .row-actions, .rebalance-row .row-actions, .holdings-row .row-actions {
     justify-content: flex-end;
     margin-top: 2px;
+  }
+  .ledger-row .reorder-btns {
+    flex-direction: row;
+    gap: 10px;
+    justify-content: flex-start;
   }
   .ledger-row:hover, .rebalance-row:hover, .holdings-row:hover, .expense-compare-row:hover { background: var(--accent-soft); }
 }

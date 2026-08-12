@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Plus, Pencil, Trash2, TrendingUp, TrendingDown, Wallet, CreditCard } from "lucide-react";
+import { Plus, Pencil, Trash2, TrendingUp, TrendingDown, Wallet, CreditCard, ChevronUp, ChevronDown } from "lucide-react";
 import { useData } from "../context/DataContext";
 import { getCategory, getLiabilityCategory } from "../lib/constants";
 import { formatManwon, formatCurrencyAmount, formatPct, formatDate, computeAssetReturns, computeAmortization } from "../lib/format";
@@ -10,8 +10,8 @@ import PageSkeleton from "../components/PageSkeleton";
 export default function Assets() {
   const {
     assets, liabilities, loading, error,
-    addAsset, updateAsset, deleteAsset,
-    addLiability, updateLiability, deleteLiability,
+    addAsset, updateAsset, deleteAsset, moveAsset,
+    addLiability, updateLiability, deleteLiability, moveLiability,
   } = useData();
   const [showAdd, setShowAdd] = useState(false);
   const [editingId, setEditingId] = useState(null);
@@ -76,9 +76,9 @@ export default function Assets() {
         ) : (
           <div className="ledger-table">
             <div className="ledger-row ledger-head">
-              <span>구분</span><span>자산명</span><span>메모</span><span className="num">평가금액</span><span></span>
+              <span></span><span>구분</span><span>자산명</span><span>메모</span><span className="num">평가금액</span><span></span>
             </div>
-            {assets.map((a) => {
+            {assets.map((a, idx) => {
               if (editingId === a.id) {
                 return (
                   <div className="ledger-row-edit" key={a.id}>
@@ -94,6 +94,14 @@ export default function Assets() {
               return (
                 <React.Fragment key={a.id}>
                   <div className="ledger-row">
+                    <span className="reorder-btns">
+                      <button className="reorder-btn" onClick={() => moveAsset(a.id, "up")} disabled={idx === 0} aria-label="위로 이동">
+                        <ChevronUp size={13} />
+                      </button>
+                      <button className="reorder-btn" onClick={() => moveAsset(a.id, "down")} disabled={idx === assets.length - 1} aria-label="아래로 이동">
+                        <ChevronDown size={13} />
+                      </button>
+                    </span>
                     <span data-label="구분">
                       <span className="tag" style={{ color: getCategory(a.category).color, borderColor: getCategory(a.category).color }}>
                         {getCategory(a.category).label}
@@ -145,9 +153,9 @@ export default function Assets() {
         ) : (
           <div className="ledger-table">
             <div className="ledger-row ledger-head">
-              <span>구분</span><span>부채명</span><span>메모</span><span className="num">잔액</span><span></span>
+              <span></span><span>구분</span><span>부채명</span><span>메모</span><span className="num">잔액</span><span></span>
             </div>
-            {liabilities.map((l) =>
+            {liabilities.map((l, idx) =>
               editingLiabilityId === l.id ? (
                 <div className="ledger-row-edit" key={l.id}>
                   <LiabilityForm
@@ -159,6 +167,14 @@ export default function Assets() {
               ) : (
                 <React.Fragment key={l.id}>
                   <div className="ledger-row">
+                    <span className="reorder-btns">
+                      <button className="reorder-btn" onClick={() => moveLiability(l.id, "up")} disabled={idx === 0} aria-label="위로 이동">
+                        <ChevronUp size={13} />
+                      </button>
+                      <button className="reorder-btn" onClick={() => moveLiability(l.id, "down")} disabled={idx === liabilities.length - 1} aria-label="아래로 이동">
+                        <ChevronDown size={13} />
+                      </button>
+                    </span>
                     <span data-label="구분">
                       <span className="tag" style={{ color: getLiabilityCategory(l.category).color, borderColor: getLiabilityCategory(l.category).color }}>
                         {getLiabilityCategory(l.category).label}

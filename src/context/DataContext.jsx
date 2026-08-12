@@ -17,8 +17,8 @@ export function DataProvider({ children }) {
     setLoading(true);
     try {
       const [a, l, t, s, g, c] = await Promise.allSettled([
-        supabase.from("assets").select("*").order("created_at", { ascending: true }),
-        supabase.from("liabilities").select("*").order("created_at", { ascending: true }),
+        supabase.from("assets").select("*").order("sort_order", { ascending: true, nullsFirst: false }).order("created_at", { ascending: true }),
+        supabase.from("liabilities").select("*").order("sort_order", { ascending: true, nullsFirst: false }).order("created_at", { ascending: true }),
         supabase.from("allocation_targets").select("*"),
         supabase.from("snapshots").select("*").order("month", { ascending: true }),
         supabase.from("goals").select("*").limit(1).maybeSingle(),
@@ -64,6 +64,7 @@ export function DataProvider({ children }) {
       buy_fx_rate: form.buyFxRate === "" || form.buyFxRate === undefined ? null : Number(form.buyFxRate),
       buy_date: form.buyDate === "" || form.buyDate === undefined ? null : form.buyDate,
       quantity: form.quantity === "" || form.quantity === undefined ? null : Number(form.quantity),
+      sort_order: assets.length,
     });
     if (err) { setError(`자산 추가에 실패했어요. (${err.message})`); return; }
     await refresh();
@@ -95,6 +96,24 @@ export function DataProvider({ children }) {
     await refresh();
   }
 
+  async function moveAsset(id, direction) {
+    const idx = assets.findIndex((a) => a.id === id);
+    if (idx === -1) return;
+    const swapIdx = direction === "up" ? idx - 1 : idx + 1;
+    if (swapIdx < 0 || swapIdx >= assets.length) return;
+    const a = assets[idx];
+    const b = assets[swapIdx];
+    const aOrder = a.sort_order ?? idx;
+    const bOrder = b.sort_order ?? swapIdx;
+    const [r1, r2] = await Promise.all([
+      supabase.from("assets").update({ sort_order: bOrder }).eq("id", a.id),
+      supabase.from("assets").update({ sort_order: aOrder }).eq("id", b.id),
+    ]);
+    const err = r1.error || r2.error;
+    if (err) { setError(`자산 순서 변경에 실패했어요. (${err.message})`); return; }
+    await refresh();
+  }
+
   async function addLiability(form) {
     const { error: err } = await supabase.from("liabilities").insert({
       category: form.category,
@@ -103,6 +122,7 @@ export function DataProvider({ children }) {
       interest_rate: form.interestRate === "" || form.interestRate === undefined ? null : Number(form.interestRate),
       term_months: form.termMonths === "" || form.termMonths === undefined ? null : Number(form.termMonths),
       memo: (form.memo || "").trim(),
+      sort_order: liabilities.length,
     });
     if (err) { setError(`부채 추가에 실패했어요. (${err.message})`); return; }
     await refresh();
@@ -127,6 +147,24 @@ export function DataProvider({ children }) {
   async function deleteLiability(id) {
     const { error: err } = await supabase.from("liabilities").delete().eq("id", id);
     if (err) { setError(`부채 삭제에 실패했어요. (${err.message})`); return; }
+    await refresh();
+  }
+
+  async function moveLiability(id, direction) {
+    const idx = liabilities.findIndex((l) => l.id === id);
+    if (idx === -1) return;
+    const swapIdx = direction === "up" ? idx - 1 : idx + 1;
+    if (swapIdx < 0 || swapIdx >= liabilities.length) return;
+    const a = liabilities[idx];
+    const b = liabilities[swapIdx];
+    const aOrder = a.sort_order ?? idx;
+    const bOrder = b.sort_order ?? swapIdx;
+    const [r1, r2] = await Promise.all([
+      supabase.from("liabilities").update({ sort_order: bOrder }).eq("id", a.id),
+      supabase.from("liabilities").update({ sort_order: aOrder }).eq("id", b.id),
+    ]);
+    const err = r1.error || r2.error;
+    if (err) { setError(`부채 순서 변경에 실패했어요. (${err.message})`); return; }
     await refresh();
   }
 
@@ -243,8 +281,8 @@ export function DataProvider({ children }) {
 
   const value = {
     assets, liabilities, allocationTargets, snapshots, goal, cashflowItems, loading, error, refresh,
-    addAsset, updateAsset, deleteAsset,
-    addLiability, updateLiability, deleteLiability,
+    addAsset, updateAsset, deleteAsset, moveAsset,
+    addLiability, updateLiability, deleteLiability, moveLiability,
     saveAllocationTargets,
     saveSnapshot, deleteSnapshot,
     saveGoal,
