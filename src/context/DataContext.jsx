@@ -61,7 +61,7 @@ export function DataProvider({ children }) {
       buy_date: form.buyDate === "" || form.buyDate === undefined ? null : form.buyDate,
       quantity: form.quantity === "" || form.quantity === undefined ? null : Number(form.quantity),
     });
-    if (err) { setError("자산 추가에 실패했어요."); return; }
+    if (err) { setError(`자산 추가에 실패했어요. (${err.message})`); return; }
     await refresh();
   }
 
@@ -81,13 +81,13 @@ export function DataProvider({ children }) {
         quantity: form.quantity === "" || form.quantity === undefined ? null : Number(form.quantity),
       })
       .eq("id", id);
-    if (err) { setError("자산 수정에 실패했어요."); return; }
+    if (err) { setError(`자산 수정에 실패했어요. (${err.message})`); return; }
     await refresh();
   }
 
   async function deleteAsset(id) {
     const { error: err } = await supabase.from("assets").delete().eq("id", id);
-    if (err) { setError("자산 삭제에 실패했어요."); return; }
+    if (err) { setError(`자산 삭제에 실패했어요. (${err.message})`); return; }
     await refresh();
   }
 
@@ -100,7 +100,7 @@ export function DataProvider({ children }) {
       term_months: form.termMonths === "" || form.termMonths === undefined ? null : Number(form.termMonths),
       memo: (form.memo || "").trim(),
     });
-    if (err) { setError("부채 추가에 실패했어요."); return; }
+    if (err) { setError(`부채 추가에 실패했어요. (${err.message})`); return; }
     await refresh();
   }
 
@@ -116,13 +116,13 @@ export function DataProvider({ children }) {
         memo: (form.memo || "").trim(),
       })
       .eq("id", id);
-    if (err) { setError("부채 수정에 실패했어요."); return; }
+    if (err) { setError(`부채 수정에 실패했어요. (${err.message})`); return; }
     await refresh();
   }
 
   async function deleteLiability(id) {
     const { error: err } = await supabase.from("liabilities").delete().eq("id", id);
-    if (err) { setError("부채 삭제에 실패했어요."); return; }
+    if (err) { setError(`부채 삭제에 실패했어요. (${err.message})`); return; }
     await refresh();
   }
 
@@ -130,7 +130,7 @@ export function DataProvider({ children }) {
     // targets: [{ category: 'stock', targetPct: 40 }, ...]
     const rows = targets.map((t) => ({ category: t.category, target_pct: Number(t.targetPct) || 0 }));
     const { error: err } = await supabase.from("allocation_targets").upsert(rows, { onConflict: "user_id,category" });
-    if (err) { setError("목표 비중 저장에 실패했어요."); return; }
+    if (err) { setError(`목표 비중 저장에 실패했어요. (${err.message})`); return; }
     await refresh();
   }
 
@@ -138,13 +138,13 @@ export function DataProvider({ children }) {
     const { error: err } = await supabase
       .from("snapshots")
       .upsert({ month, total, real_estate_total: realEstateTotal, financial_total: financialTotal }, { onConflict: "user_id,month" });
-    if (err) { setError("스냅샷 저장에 실패했어요."); return; }
+    if (err) { setError(`스냅샷 저장에 실패했어요. (${err.message})`); return; }
     await refresh();
   }
 
   async function deleteSnapshot(month) {
     const { error: err } = await supabase.from("snapshots").delete().eq("month", month);
-    if (err) { setError("스냅샷 삭제에 실패했어요."); return; }
+    if (err) { setError(`스냅샷 삭제에 실패했어요. (${err.message})`); return; }
     await refresh();
   }
 
@@ -156,7 +156,7 @@ export function DataProvider({ children }) {
       target_date: form.targetDate,
     };
     const { error: err } = await supabase.from("goals").upsert(payload, { onConflict: "user_id" });
-    if (err) { setError("목표 저장에 실패했어요."); return; }
+    if (err) { setError(`목표 저장에 실패했어요. (${err.message})`); return; }
     await refresh();
   }
 
@@ -169,7 +169,7 @@ export function DataProvider({ children }) {
       memo: (form.memo || "").trim(),
       is_recurring: !!form.isRecurring,
     });
-    if (err) { setError("현금흐름 항목 추가에 실패했어요."); return; }
+    if (err) { setError(`현금흐름 항목 추가에 실패했어요. (${err.message})`); return; }
     await refresh();
   }
 
@@ -185,13 +185,13 @@ export function DataProvider({ children }) {
         is_recurring: !!form.isRecurring,
       })
       .eq("id", id);
-    if (err) { setError("현금흐름 항목 수정에 실패했어요."); return; }
+    if (err) { setError(`현금흐름 항목 수정에 실패했어요. (${err.message})`); return; }
     await refresh();
   }
 
   async function deleteCashflowItem(id) {
     const { error: err } = await supabase.from("cashflow_items").delete().eq("id", id);
-    if (err) { setError("현금흐름 항목 삭제에 실패했어요."); return; }
+    if (err) { setError(`현금흐름 항목 삭제에 실패했어요. (${err.message})`); return; }
     await refresh();
   }
 
