@@ -79,7 +79,7 @@ export function AssetForm({ initial, onSubmit, onCancel }) {
             </label>
             <label>
               매수일
-              <input type="date" value={buyDate} onChange={(e) => setBuyDate(e.target.value)} />
+              <input type="date" value={buyDate} onChange={(e) => setBuyDate(e.target.value)} min="1950-01-01" max={new Date().toISOString().slice(0, 10)} />
             </label>
           </div>
           <div className="form-row">
@@ -203,7 +203,7 @@ export function GoalForm({ initial, onSubmit, onCancel }) {
         </label>
         <label>
           목표 날짜
-          <input type="date" value={targetDate} onChange={(e) => setTargetDate(e.target.value)} required />
+          <input type="date" value={targetDate} onChange={(e) => setTargetDate(e.target.value)} min="1950-01-01" max="2100-12-31" required />
         </label>
       </div>
       <div className="form-row">
@@ -270,7 +270,7 @@ export function CashflowItemForm({ initial, onSubmit, onCancel }) {
         </label>
         <label>
           월
-          <input type="month" value={month} onChange={(e) => setMonth(e.target.value)} required />
+          <input type="month" value={month} onChange={(e) => setMonth(e.target.value)} min="1950-01" max="2100-12" required />
         </label>
       </div>
       <div className="form-row">
@@ -312,7 +312,7 @@ export function SnapshotForm({ onSubmit, onCancel, defaultRealEstate, defaultFin
       <div className="form-row">
         <label>
           월
-          <input type="month" value={month} onChange={(e) => setMonth(e.target.value)} required />
+          <input type="month" value={month} onChange={(e) => setMonth(e.target.value)} min="1950-01" max="2100-12" required />
         </label>
         <label>
           부동산 (만원)
