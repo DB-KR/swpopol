@@ -13,10 +13,10 @@ export function DataProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const refresh = useCallback(async () => {
+  const refresh = useCallback(async (isRetry = false) => {
     setLoading(true);
     try {
-      const [a, l, t, s, g, c] = await Promise.all([
+      const [a, l, t, s, g, c] = await Promise.allSettled([
         supabase.from("assets").select("*").order("created_at", { ascending: true }),
         supabase.from("liabilities").select("*").order("created_at", { ascending: true }),
         supabase.from("allocation_targets").select("*"),
@@ -24,19 +24,23 @@ export function DataProvider({ children }) {
         supabase.from("goals").select("*").limit(1).maybeSingle(),
         supabase.from("cashflow_items").select("*").order("month", { ascending: true }),
       ]);
-      if (a.error) throw a.error;
-      if (l.error) throw l.error;
-      if (t.error) throw t.error;
-      if (s.error) throw s.error;
-      if (g.error) throw g.error;
-      if (c.error) throw c.error;
-      setAssets(a.data || []);
-      setLiabilities(l.data || []);
-      setAllocationTargets(t.data || []);
-      setSnapshots(s.data || []);
-      setGoal(g.data || null);
-      setCashflowItems(c.data || []);
-      setError(null);
+
+      const failed = [];
+      const ok = (r) => r.status === "fulfilled" && !r.value.error;
+
+      if (ok(a)) setAssets(a.value.data || []); else failed.push("자산");
+      if (ok(l)) setLiabilities(l.value.data || []); else failed.push("부채");
+      if (ok(t)) setAllocationTargets(t.value.data || []); else failed.push("목표비중");
+      if (ok(s)) setSnapshots(s.value.data || []); else failed.push("스냅샷");
+      if (ok(g)) setGoal(g.value.data || null); else failed.push("목표");
+      if (ok(c)) setCashflowItems(c.value.data || []); else failed.push("현금흐름");
+
+      if (failed.length > 0 && !isRetry) {
+        // 일시적인 네트워크 문제일 수 있어 조용히 한 번 더 시도합니다.
+        setTimeout(() => refresh(true), 1500);
+        return;
+      }
+      setError(failed.length > 0 ? `${failed.join(", ")} 데이터를 불러오지 못했어요. 새로고침해주세요.` : null);
     } catch (e) {
       setError("데이터를 불러오지 못했어요. 잠시 후 다시 시도해주세요.");
     } finally {
