@@ -156,32 +156,10 @@ export default function Overview() {
                 )}
               </div>
             </div>
-            <div className="hero-stats">
-              <div className="hero-stat">
-                <span className="hero-stat-label">목표까지</span>
-                <span className="hero-stat-value">{daysLeft === null ? "-" : daysLeft >= 0 ? `D-${daysLeft}` : `${Math.abs(daysLeft)}일 지남`}</span>
-              </div>
-              <div className="hero-stat">
-                <span className="hero-stat-label">올해 순자산 증가율</span>
-                <span className={`hero-stat-value ${thisYearYoyPct === null ? "" : thisYearYoyPct >= 0 ? "pos" : "neg"}`}>
-                  {thisYearYoyPct === null ? "-" : formatPct(thisYearYoyPct)}
-                </span>
-              </div>
-              <div className="hero-stat">
-                <span className="hero-stat-label">이번 달 순저축액</span>
-                <span className={`hero-stat-value ${monthlySavingsAmt === null ? "" : monthlySavingsAmt >= 0 ? "pos" : "neg"}`}>
-                  {monthlySavingsAmt === null ? "-" : `${monthlySavingsAmt >= 0 ? "+" : ""}${formatManwon(monthlySavingsAmt)}`}
-                </span>
-              </div>
-              <div className="hero-stat">
-                <span className="hero-stat-label">원/달러 환율</span>
-                <span className="hero-stat-value">{fxRates.USD ? `${fxRates.USD.toLocaleString("ko-KR", { maximumFractionDigits: 1 })}원` : "-"}</span>
-              </div>
-            </div>
           </div>
           <div className="hero-market-info">
             <div className="market-info-col">
-              <MacroCalendarWidget limit={4} />
+              <MacroCalendarWidget limit={2} />
             </div>
             <div className="market-info-col">
               <NewsLinksWidget />
@@ -191,6 +169,29 @@ export default function Overview() {
           <div className="hero-top-right">
             <span className="hero-clock">{clock.timeStr}</span>
             <MiniCalendar year={clock.year} month={clock.month} day={clock.day} eventDays={getMacroEventDaysForMonth(clock.year, clock.month)} />
+          </div>
+        </div>
+
+        <div className="hero-stats">
+          <div className="hero-stat">
+            <span className="hero-stat-label">목표까지</span>
+            <span className="hero-stat-value">{daysLeft === null ? "-" : daysLeft >= 0 ? `D-${daysLeft}` : `${Math.abs(daysLeft)}일 지남`}</span>
+          </div>
+          <div className="hero-stat">
+            <span className="hero-stat-label">올해 순자산 증가율</span>
+            <span className={`hero-stat-value ${thisYearYoyPct === null ? "" : thisYearYoyPct >= 0 ? "pos" : "neg"}`}>
+              {thisYearYoyPct === null ? "-" : formatPct(thisYearYoyPct)}
+            </span>
+          </div>
+          <div className="hero-stat">
+            <span className="hero-stat-label">이번 달 순저축액</span>
+            <span className={`hero-stat-value ${monthlySavingsAmt === null ? "" : monthlySavingsAmt >= 0 ? "pos" : "neg"}`}>
+              {monthlySavingsAmt === null ? "-" : `${monthlySavingsAmt >= 0 ? "+" : ""}${formatManwon(monthlySavingsAmt)}`}
+            </span>
+          </div>
+          <div className="hero-stat">
+            <span className="hero-stat-label">원/달러 환율</span>
+            <span className="hero-stat-value">{fxRates.USD ? `${fxRates.USD.toLocaleString("ko-KR", { maximumFractionDigits: 1 })}원` : "-"}</span>
           </div>
         </div>
       </header>
