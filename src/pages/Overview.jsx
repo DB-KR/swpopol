@@ -161,7 +161,7 @@ export default function Overview() {
           </div>
           <div className="hero-market-info">
             <div className="market-info-col">
-              <MacroCalendarWidget limit={2} />
+              <MacroCalendarWidget limit={4} />
             </div>
             <div className="market-info-col">
               <NewsLinksWidget />
