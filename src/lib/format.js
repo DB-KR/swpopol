@@ -184,6 +184,32 @@ export function getLiabilityRecurringExpenses(liabilities) {
     })
     .filter(Boolean);
 }
+
+// 목표 설정일(createdAt)부터 목표일(targetDate)까지의 기간 중 "남은 비율"과
+// 1년 단위 눈금 위치(%)를 계산합니다. 시작 직후에는 게이지가 가득 차 있고,
+// 목표일이 다가올수록 줄어듭니다.
+export function computeGoalTimeGauge(createdAt, targetDate) {
+  if (!createdAt || !targetDate) return null;
+  const start = new Date(createdAt).getTime();
+  const end = new Date(targetDate).getTime();
+  const now = Date.now();
+  const totalMs = end - start;
+  if (!(totalMs > 0)) return null;
+
+  const remainingMs = end - now;
+  const remainingPct = Math.max(0, Math.min(100, (remainingMs / totalMs) * 100));
+  const daysLeft = Math.ceil(remainingMs / 86400000);
+
+  const yearMs = 365.25 * 86400000;
+  const totalYears = totalMs / yearMs;
+  const yearTicks = [];
+  for (let y = 1; y < totalYears; y++) {
+    yearTicks.push((y * yearMs / totalMs) * 100);
+  }
+
+  return { remainingPct, daysLeft, yearTicks };
+}
+
 // principal(만원), annualRatePct(연이자율 %), termMonths(남은 개월 수)
 export function computeAmortization(principal, annualRatePct, termMonths) {
   const P = Number(principal) || 0;

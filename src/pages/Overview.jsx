@@ -2,13 +2,15 @@ import React, { useState } from "react";
 import { TrendingUp, TrendingDown, Target, Check, Circle, Pencil, Plus, Trash2, ArrowUpRight, ArrowDownRight, Layers, CreditCard, Activity } from "lucide-react";
 import { useData } from "../context/DataContext";
 import { CATEGORIES, ASSET_MILESTONES, getYearColor } from "../lib/constants";
-import { formatManwon, formatMonthLabel, formatPct, formatDate, currentMonth, aggregateCashflowByMonth, computeGaugeSegments, computeAnnualReport, getLiabilityRecurringExpenses } from "../lib/format";
+import { formatManwon, formatMonthLabel, formatPct, formatDate, currentMonth, aggregateCashflowByMonth, computeGaugeSegments, computeAnnualReport, getLiabilityRecurringExpenses, computeGoalTimeGauge } from "../lib/format";
 import { useCountUp } from "../lib/useCountUp";
 import { useFxRates } from "../lib/useFxRates";
 import { useKstClock } from "../lib/useKstClock";
 import { AllocationDonut, HoldingsBar, TrendArea } from "../components/charts";
 import { GoalForm, SnapshotForm } from "../components/forms";
 import MiniCalendar from "../components/MiniCalendar";
+import MacroCalendarWidget, { getMacroEventDaysForMonth } from "../components/MacroCalendarWidget";
+import NewsLinksWidget from "../components/NewsLinksWidget";
 import Stamp from "../components/Stamp";
 import PageSkeleton from "../components/PageSkeleton";
 
@@ -77,6 +79,7 @@ export default function Overview() {
   })();
 
   const daysLeft = goal && goal.target_date ? Math.ceil((new Date(goal.target_date) - new Date()) / 86400000) : null;
+  const timeGauge = goal ? computeGoalTimeGauge(goal.created_at, goal.target_date) : null;
   const realEstateTarget = goal?.real_estate_target || 0;
   const financialTarget = goal?.financial_target || 0;
   const realEstateSegments = computeGaugeSegments(snapshots, realEstateTarget, realEstateTotal, getYearColor, "real_estate_total");
@@ -178,7 +181,13 @@ export default function Overview() {
           </div>
           <div className="hero-top-right">
             <span className="hero-clock">{clock.timeStr}</span>
-            <MiniCalendar year={clock.year} month={clock.month} day={clock.day} />
+            <div className="hero-right-grid">
+              <div className="hero-right-col">
+                <MacroCalendarWidget />
+                <NewsLinksWidget />
+              </div>
+              <MiniCalendar year={clock.year} month={clock.month} day={clock.day} eventDays={getMacroEventDaysForMonth(clock.year, clock.month)} />
+            </div>
           </div>
         </div>
       </header>
@@ -209,12 +218,7 @@ export default function Overview() {
       <div className="card">
         <div className="card-head">
           <h2>목표 자산 도달률</h2>
-          {goal && (
-            <span className="card-sub">
-              {goal.label}
-              {daysLeft !== null && ` · ${daysLeft >= 0 ? `D-${daysLeft}` : `${Math.abs(daysLeft)}일 지남`}`}
-            </span>
-          )}
+          {goal && <span className="card-sub">{goal.label}</span>}
           {goal && !showGoalForm && (
             <button className="link-btn" onClick={() => setShowGoalForm(true)}><Pencil size={12} /> 수정</button>
           )}
@@ -233,10 +237,30 @@ export default function Overview() {
         ) : showGoalForm ? (
           <GoalForm initial={goal} onSubmit={async (f) => { await saveGoal(f); setShowGoalForm(false); }} onCancel={() => setShowGoalForm(false)} />
         ) : (
-          <div className="gauge-group">
-            <GaugeBlock label="부동산" total={realEstateTotal} target={realEstateTarget} segments={realEstateSegments} />
-            <GaugeBlock label="금융자산" total={financialTotal} target={financialTarget} segments={financialSegments} />
-          </div>
+          <>
+            {timeGauge && (
+              <div className="time-gauge">
+                <div className="time-gauge-head">
+                  <span className="time-gauge-label">목표 기간</span>
+                  <span className="time-gauge-days">{timeGauge.daysLeft >= 0 ? `D-${timeGauge.daysLeft}` : `${Math.abs(timeGauge.daysLeft)}일 지남`}</span>
+                </div>
+                <div className="time-gauge-track">
+                  <div className="time-gauge-fill" style={{ width: `${timeGauge.remainingPct}%` }} />
+                  {timeGauge.yearTicks.map((pos, i) => (
+                    <div className="time-gauge-tick" style={{ left: `${pos}%` }} key={i} />
+                  ))}
+                </div>
+                <div className="time-gauge-foot">
+                  <span>설정일</span>
+                  <span>{formatDate(goal.target_date)} 목표</span>
+                </div>
+              </div>
+            )}
+            <div className="gauge-group">
+              <GaugeBlock label="부동산" total={realEstateTotal} target={realEstateTarget} segments={realEstateSegments} />
+              <GaugeBlock label="금융자산" total={financialTotal} target={financialTarget} segments={financialSegments} />
+            </div>
+          </>
         )}
       </div>
 

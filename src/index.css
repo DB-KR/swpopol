@@ -203,15 +203,38 @@ a { color: inherit; }
 .pill { font-family: 'IBM Plex Mono'; font-size: 12px; background: var(--paper); border: 1px solid var(--line); border-radius: 20px; padding: 6px 12px; }
 
 /* Hero clock + mini calendar */
-.hero-top-right { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; flex-shrink: 0; }
+.hero-top-right { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; flex-shrink: 0; }
 .hero-clock { font-family: 'IBM Plex Mono'; font-size: 20px; font-weight: 600; letter-spacing: 1px; }
-.mini-calendar { width: 168px; }
-.mini-calendar-head { font-family: 'IBM Plex Mono'; font-size: 11px; color: var(--ink-soft); text-align: right; margin-bottom: 4px; }
-.mini-calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+.hero-right-grid { display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap; justify-content: flex-end; }
+.hero-right-col { display: flex; flex-direction: column; gap: 12px; }
+.mini-calendar { width: 190px; }
+.mini-calendar-head { font-family: 'IBM Plex Mono'; font-size: 11px; color: var(--ink-soft); text-align: right; margin-bottom: 6px; }
+.mini-calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
 .mini-calendar-dow { font-size: 9px; color: var(--ink-soft); text-align: center; }
-.mini-calendar-day { font-family: 'IBM Plex Mono'; font-size: 10px; text-align: center; padding: 3px 0; border-radius: 3px; color: var(--ink); }
+.mini-calendar-day { position: relative; font-family: 'IBM Plex Mono'; font-size: 11px; text-align: center; padding: 6px 0; border-radius: 5px; color: var(--ink); }
 .mini-calendar-day.empty { visibility: hidden; }
 .mini-calendar-day.today { background: var(--accent); color: var(--on-accent); font-weight: 600; }
+.mini-calendar-day.has-event::after { content: ""; position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%); width: 4px; height: 4px; border-radius: 50%; background: var(--gold); }
+.mini-calendar-day.today.has-event::after { background: var(--on-accent); }
+
+/* Macro economic calendar widget */
+.macro-cal { width: 230px; background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; }
+.macro-cal-head { font-size: 12px; font-weight: 600; margin-bottom: 8px; }
+.macro-cal-list { display: flex; flex-direction: column; gap: 7px; }
+.macro-cal-row { display: flex; flex-direction: column; gap: 1px; font-size: 11px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
+.macro-cal-row:last-child { border-bottom: none; padding-bottom: 0; }
+.macro-cal-date { font-family: 'IBM Plex Mono'; color: var(--ink-soft); font-size: 10px; }
+.macro-cal-tag { display: inline-block; width: fit-content; font-size: 10px; font-weight: 600; padding: 1px 6px; border-radius: 8px; margin: 2px 0; }
+.macro-cal-fomc { background: color-mix(in srgb, var(--stamp-red) 16%, var(--card-bg)); color: var(--stamp-red); }
+.macro-cal-rate { background: color-mix(in srgb, var(--accent) 16%, var(--card-bg)); color: var(--accent); }
+.macro-cal-cpi { background: color-mix(in srgb, var(--gold) 20%, var(--card-bg)); color: var(--gold); }
+.macro-cal-title { font-size: 11px; }
+
+.news-links { width: 230px; background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; }
+.news-links-head { font-size: 12px; font-weight: 600; margin-bottom: 8px; }
+.news-links-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.news-link-btn { display: inline-flex; align-items: center; justify-content: center; gap: 4px; font-size: 11px; padding: 7px 6px; background: var(--card-bg); border: 1px solid var(--line); border-radius: 8px; color: var(--ink); text-decoration: none; text-align: center; }
+.news-link-btn:hover { border-color: var(--accent); color: var(--accent); }
 
 .pos { color: var(--growth-green); }
 .neg { color: var(--stamp-red); }
@@ -359,6 +382,16 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
 .gauge-legend-item { display: inline-flex; align-items: center; gap: 5px; font-family: 'IBM Plex Mono'; font-size: 11px; color: var(--ink-soft); }
 .gauge-legend-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
 .gauge-foot { display: flex; justify-content: space-between; font-family: 'IBM Plex Mono'; font-size: 11px; color: var(--ink-soft); }
+
+/* Goal time gauge (countdown) */
+.time-gauge { display: flex; flex-direction: column; gap: 8px; padding-bottom: 18px; margin-bottom: 4px; border-bottom: 1px solid var(--line); }
+.time-gauge-head { display: flex; justify-content: space-between; align-items: baseline; }
+.time-gauge-label { font-size: 13px; font-weight: 600; }
+.time-gauge-days { font-family: 'IBM Plex Mono'; font-size: 13px; color: var(--gold); font-weight: 600; }
+.time-gauge-track { position: relative; height: 14px; background: var(--paper); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.time-gauge-fill { height: 100%; background: var(--gold); transition: width 0.6s ease; }
+.time-gauge-tick { position: absolute; top: 0; bottom: 0; width: 1px; background: rgba(0, 0, 0, 0.14); }
+.time-gauge-foot { display: flex; justify-content: space-between; font-family: 'IBM Plex Mono'; font-size: 11px; color: var(--ink-soft); }
 
 /* Milestone stepper */
 .milestones { display: flex; flex-wrap: wrap; align-items: flex-start; padding-top: 4px; }
