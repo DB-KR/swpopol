@@ -1,7 +1,7 @@
 export const CATEGORIES = [
   { key: "stock", label: "주식/ETF", color: "#B23A2F" },
   { key: "cash", label: "예적금·현금", color: "#2F6F4E" },
-  { key: "realestate", label: "부동산", color: "#1B2A41" },
+  { key: "realestate", label: "부동산", color: "#5C6F9E" },
   { key: "pension", label: "연금/보험", color: "#B08D57" },
 ];
 
@@ -16,9 +16,9 @@ export const INCOME_CATEGORIES = [
 
 export const EXPENSE_CATEGORIES = [
   { key: "living", label: "생활비", color: "#B23A2F" },
-  { key: "telecom", label: "통신비", color: "#1B2A41" },
+  { key: "telecom", label: "통신비", color: "#5C6F9E" },
   { key: "insurance", label: "보험비", color: "#B08D57" },
-  { key: "other_expense", label: "기타지출", color: "#5B6472" },
+  { key: "other_expense", label: "기타지출", color: "#8A7F6E" },
 ];
 
 export function getIncomeCategory(key) {
@@ -41,7 +41,7 @@ export function getCurrency(key) {
   return CURRENCIES.find((c) => c.key === key) || CURRENCIES[0];
 }
 
-export const YEAR_COLORS = ["#2F6F4E", "#1B2A41", "#B23A2F", "#B08D57", "#5B6472", "#6B8F71"];
+export const YEAR_COLORS = ["#2F6F4E", "#5C6F9E", "#B23A2F", "#B08D57", "#8A7F6E", "#6B8F71"];
 
 export function getYearColor(index) {
   return YEAR_COLORS[index % YEAR_COLORS.length];
@@ -53,8 +53,8 @@ export const ASSET_MILESTONES = [10000, 30000, 50000, 100000, 200000];
 export const LIABILITY_CATEGORIES = [
   { key: "mortgage", label: "주택담보대출", color: "#B23A2F" },
   { key: "credit", label: "신용대출", color: "#B08D57" },
-  { key: "jeonse", label: "전세자금대출", color: "#1B2A41" },
-  { key: "other", label: "기타부채", color: "#5B6472" },
+  { key: "jeonse", label: "전세자금대출", color: "#5C6F9E" },
+  { key: "other", label: "기타부채", color: "#8A7F6E" },
 ];
 
 export function getLiabilityCategory(key) {
