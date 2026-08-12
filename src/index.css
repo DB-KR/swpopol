@@ -205,8 +205,9 @@ a { color: inherit; }
 /* Hero clock + mini calendar */
 .hero-top-right { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; flex-shrink: 0; }
 .hero-clock { font-family: 'IBM Plex Mono'; font-size: 20px; font-weight: 600; letter-spacing: 1px; }
-.hero-right-grid { display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap; justify-content: flex-end; }
-.hero-right-col { display: flex; flex-direction: column; gap: 12px; }
+.market-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--line); }
+.market-info-col { min-width: 0; }
+@media (max-width: 640px) { .market-info-grid { grid-template-columns: 1fr; } }
 .mini-calendar { width: 190px; }
 .mini-calendar-head { font-family: 'IBM Plex Mono'; font-size: 11px; color: var(--ink-soft); text-align: right; margin-bottom: 6px; }
 .mini-calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
@@ -218,7 +219,7 @@ a { color: inherit; }
 .mini-calendar-day.today.has-event::after { background: var(--on-accent); }
 
 /* Macro economic calendar widget */
-.macro-cal { width: 230px; background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; }
+.macro-cal { width: 100%; }
 .macro-cal-head { font-size: 12px; font-weight: 600; margin-bottom: 8px; }
 .macro-cal-list { display: flex; flex-direction: column; gap: 7px; }
 .macro-cal-row { display: flex; flex-direction: column; gap: 1px; font-size: 11px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
@@ -230,7 +231,7 @@ a { color: inherit; }
 .macro-cal-cpi { background: color-mix(in srgb, var(--gold) 20%, var(--card-bg)); color: var(--gold); }
 .macro-cal-title { font-size: 11px; }
 
-.news-links { width: 230px; background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; }
+.news-links { width: 100%; }
 .news-links-head { font-size: 12px; font-weight: 600; margin-bottom: 8px; }
 .news-links-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
 .news-link-btn { display: inline-flex; align-items: center; justify-content: center; gap: 4px; font-size: 11px; padding: 7px 6px; background: var(--card-bg); border: 1px solid var(--line); border-radius: 8px; color: var(--ink); text-decoration: none; text-align: center; }

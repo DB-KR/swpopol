@@ -181,13 +181,16 @@ export default function Overview() {
           </div>
           <div className="hero-top-right">
             <span className="hero-clock">{clock.timeStr}</span>
-            <div className="hero-right-grid">
-              <div className="hero-right-col">
-                <MacroCalendarWidget />
-                <NewsLinksWidget />
-              </div>
-              <MiniCalendar year={clock.year} month={clock.month} day={clock.day} eventDays={getMacroEventDaysForMonth(clock.year, clock.month)} />
-            </div>
+            <MiniCalendar year={clock.year} month={clock.month} day={clock.day} eventDays={getMacroEventDaysForMonth(clock.year, clock.month)} />
+          </div>
+        </div>
+
+        <div className="market-info-grid">
+          <div className="market-info-col">
+            <MacroCalendarWidget limit={4} />
+          </div>
+          <div className="market-info-col">
+            <NewsLinksWidget />
           </div>
         </div>
       </header>
