@@ -17,20 +17,31 @@ export default function Cashflow() {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [filterMode, setFilterMode] = useState("all"); // all | recurring | single
+  const [selectedMonth, setSelectedMonth] = useState(null); // null이면 "최근 달" 자동 선택
 
   const liabilityExpenses = getLiabilityRecurringExpenses(liabilities);
   const effectiveItems = [...cashflowItems, ...liabilityExpenses];
 
   const monthly = aggregateCashflowByMonth(effectiveItems);
   const latestMonth = monthly.length > 0 ? monthly[monthly.length - 1].month : currentMonth();
+  const displayMonth = selectedMonth || latestMonth;
+  const isThisMonth = displayMonth === currentMonth();
+
+  const availableMonths = (() => {
+    const set = new Set(monthly.map((m) => m.month));
+    set.add(currentMonth());
+    return [...set].sort().reverse();
+  })();
 
   const latest = monthly.find((m) => m.month === latestMonth);
   const savingsRate = latest && latest.income > 0 ? ((latest.income - latest.expense) / latest.income) * 100 : null;
 
-  const prevMonthData = monthly.length > 1 ? monthly[monthly.length - 2] : null;
-  const expenseDiff = latest && prevMonthData ? latest.expense - prevMonthData.expense : null;
-  const expenseDiffPct = latest && prevMonthData && prevMonthData.expense > 0
-    ? ((latest.expense - prevMonthData.expense) / prevMonthData.expense) * 100
+  const displayData = monthly.find((m) => m.month === displayMonth);
+  const priorMonths = monthly.filter((m) => m.month < displayMonth);
+  const prevMonthData = priorMonths.length > 0 ? priorMonths[priorMonths.length - 1] : null;
+  const expenseDiff = displayData && prevMonthData ? displayData.expense - prevMonthData.expense : null;
+  const expenseDiffPct = displayData && prevMonthData && prevMonthData.expense > 0
+    ? ((displayData.expense - prevMonthData.expense) / prevMonthData.expense) * 100
     : null;
 
   const savingsRateSeries = monthly
@@ -40,7 +51,7 @@ export default function Cashflow() {
   const expenseAllocation = (() => {
     const sums = {};
     effectiveItems
-      .filter((it) => it.type === "expense" && it.month === latestMonth && matchesFilter(it, filterMode))
+      .filter((it) => it.type === "expense" && it.month === displayMonth && matchesFilter(it, filterMode))
       .forEach((it) => { sums[it.category] = (sums[it.category] || 0) + Number(it.amount || 0); });
     return Object.entries(sums)
       .map(([key, value]) => ({ key, value, label: getExpenseCategory(key).label, color: getExpenseCategory(key).color }))
@@ -92,8 +103,12 @@ export default function Cashflow() {
 
       <div className="card">
         <div className="card-head">
-          <h2>이번 달 지출</h2>
-          <span className="card-sub">{formatMonthLabel(latestMonth)} 기준</span>
+          <h2>{isThisMonth ? "이번 달 지출" : `${formatMonthLabel(displayMonth)} 지출`}</h2>
+          <select className="month-select" value={displayMonth} onChange={(e) => setSelectedMonth(e.target.value)}>
+            {availableMonths.map((m) => (
+              <option key={m} value={m}>{formatMonthLabel(m)}{m === currentMonth() ? " (이번 달)" : ""}</option>
+            ))}
+          </select>
         </div>
         {filterMode === "all" && expenseDiff !== null && (
           <p className={`form-hint ${expenseDiff > 0 ? "neg" : expenseDiff < 0 ? "pos" : ""}`} style={{ marginBottom: 10 }}>
