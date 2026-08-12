@@ -195,6 +195,48 @@ export function DataProvider({ children }) {
     await refresh();
   }
 
+  // 백업 JSON으로 현재 데이터를 전부 대체합니다. id/user_id/created_at 같은 메타 필드는
+  // 원본 프로젝트/계정에 종속적이라 제외하고, 실제 데이터 컬럼만 골라서 새로 넣습니다.
+  const NIL_UUID = "00000000-0000-0000-0000-000000000000";
+
+  function pick(obj, fields) {
+    const out = {};
+    fields.forEach((f) => { if (obj[f] !== undefined) out[f] = obj[f]; });
+    return out;
+  }
+
+  async function replaceTable(table, rows, fields) {
+    const del = await supabase.from(table).delete().neq("id", NIL_UUID);
+    if (del.error) throw del.error;
+    if (Array.isArray(rows) && rows.length > 0) {
+      const payload = rows.map((r) => pick(r, fields));
+      const ins = await supabase.from(table).insert(payload);
+      if (ins.error) throw ins.error;
+    }
+  }
+
+  async function restoreBackup(data) {
+    setError(null);
+    try {
+      await replaceTable("assets", data.assets, ["category", "name", "value", "memo", "currency", "buy_price", "sell_price", "buy_fx_rate", "buy_date", "quantity"]);
+      await replaceTable("liabilities", data.liabilities, ["category", "name", "amount", "interest_rate", "term_months", "memo"]);
+      await replaceTable("snapshots", data.snapshots, ["month", "total", "real_estate_total", "financial_total"]);
+      await replaceTable("cashflow_items", data.cashflowItems, ["month", "type", "category", "amount", "memo", "is_recurring"]);
+      await replaceTable("allocation_targets", data.allocationTargets, ["category", "target_pct"]);
+      if (data.goal) {
+        const payload = pick(data.goal, ["label", "target_date", "real_estate_target", "financial_target"]);
+        const { error: gErr } = await supabase.from("goals").upsert(payload, { onConflict: "user_id" });
+        if (gErr) throw gErr;
+      }
+      await refresh();
+      return { success: true };
+    } catch (e) {
+      setError("복원 중 오류가 발생했어요. 일부만 반영됐을 수 있어요.");
+      await refresh();
+      return { success: false };
+    }
+  }
+
   const value = {
     assets, liabilities, allocationTargets, snapshots, goal, cashflowItems, loading, error, refresh,
     addAsset, updateAsset, deleteAsset,
@@ -203,6 +245,7 @@ export function DataProvider({ children }) {
     saveSnapshot, deleteSnapshot,
     saveGoal,
     addCashflowItem, updateCashflowItem, deleteCashflowItem,
+    restoreBackup,
   };
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;

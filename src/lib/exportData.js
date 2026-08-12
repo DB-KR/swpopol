@@ -37,3 +37,18 @@ export function downloadCsv(rows, filename) {
   downloadBlob("\uFEFF" + toCsv(rows), filename, "text/csv;charset=utf-8");
   return true;
 }
+
+export function readJsonFile(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        resolve(JSON.parse(reader.result));
+      } catch (e) {
+        reject(new Error("파일을 읽을 수 없어요. 올바른 백업(JSON) 파일인지 확인해주세요."));
+      }
+    };
+    reader.onerror = () => reject(new Error("파일을 읽는 중 오류가 발생했어요."));
+    reader.readAsText(file);
+  });
+}

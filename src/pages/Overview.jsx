@@ -5,8 +5,10 @@ import { CATEGORIES, ASSET_MILESTONES, getYearColor } from "../lib/constants";
 import { formatManwon, formatMonthLabel, formatPct, formatDate, currentMonth, aggregateCashflowByMonth, computeGaugeSegments, computeAnnualReport, getLiabilityRecurringExpenses } from "../lib/format";
 import { useCountUp } from "../lib/useCountUp";
 import { useFxRates } from "../lib/useFxRates";
+import { useKstClock } from "../lib/useKstClock";
 import { AllocationDonut, HoldingsBar, TrendArea } from "../components/charts";
 import { GoalForm, SnapshotForm } from "../components/forms";
+import MiniCalendar from "../components/MiniCalendar";
 import Stamp from "../components/Stamp";
 
 function GaugeBlock({ label, total, target, segments }) {
@@ -50,6 +52,7 @@ function GaugeBlock({ label, total, target, segments }) {
 export default function Overview() {
   const { assets, liabilities, snapshots, goal, cashflowItems, loading, error, saveGoal, saveSnapshot, deleteSnapshot } = useData();
   const { rates: fxRates } = useFxRates(["USD"]);
+  const clock = useKstClock();
   const [showGoalForm, setShowGoalForm] = useState(false);
   const [showSnapshotForm, setShowSnapshotForm] = useState(false);
   const [justSnapshotted, setJustSnapshotted] = useState(false);
@@ -79,12 +82,6 @@ export default function Overview() {
   const financialSegments = computeGaugeSegments(snapshots, financialTarget, financialTotal, getYearColor, "financial_total");
 
   const monthlyCashflow = aggregateCashflowByMonth([...cashflowItems, ...getLiabilityRecurringExpenses(liabilities)]);
-  const savingsRate = (() => {
-    if (monthlyCashflow.length === 0) return null;
-    const latest = monthlyCashflow[monthlyCashflow.length - 1];
-    if (!latest.income) return null;
-    return ((latest.income - latest.expense) / latest.income) * 100;
-  })();
 
   const sums = {};
   assets.forEach((a) => { sums[a.category] = (sums[a.category] || 0) + Number(a.value || 0); });
@@ -142,6 +139,10 @@ export default function Overview() {
             <span className="eyebrow">PERSONAL ASSET PASSBOOK</span>
             <h1>개요</h1>
           </div>
+          <div className="hero-top-right">
+            <span className="hero-clock">{clock.timeStr}</span>
+            <MiniCalendar year={clock.year} month={clock.month} day={clock.day} />
+          </div>
         </div>
         <div className="hero-main">
           <div className="hero-total">
@@ -153,10 +154,6 @@ export default function Overview() {
                 {momChangePct >= 0 ? <TrendingUp size={13} /> : <TrendingDown size={13} />} 자산 전월대비 {formatPct(momChangePct)}
               </span>
             )}
-          </div>
-          <div className="hero-pills">
-            {savingsRate !== null && <span className="pill">이번달 저축률 {savingsRate.toFixed(0)}%</span>}
-            {fxRates.USD && <span className="pill">원/달러 {fxRates.USD.toLocaleString("ko-KR", { maximumFractionDigits: 1 })}원</span>}
           </div>
         </div>
         <div className="hero-stats">
@@ -175,6 +172,10 @@ export default function Overview() {
             <span className={`hero-stat-value ${monthlySavingsAmt === null ? "" : monthlySavingsAmt >= 0 ? "pos" : "neg"}`}>
               {monthlySavingsAmt === null ? "-" : `${monthlySavingsAmt >= 0 ? "+" : ""}${formatManwon(monthlySavingsAmt)}`}
             </span>
+          </div>
+          <div className="hero-stat">
+            <span className="hero-stat-label">원/달러 환율</span>
+            <span className="hero-stat-value">{fxRates.USD ? `${fxRates.USD.toLocaleString("ko-KR", { maximumFractionDigits: 1 })}원` : "-"}</span>
           </div>
         </div>
       </header>
