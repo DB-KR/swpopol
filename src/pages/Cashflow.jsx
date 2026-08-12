@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Plus, Trash2, Pencil, TrendingUp, TrendingDown, Receipt } from "lucide-react";
 import { useData } from "../context/DataContext";
-import { formatManwon, formatMonthLabel, formatPct, currentMonth, aggregateCashflowByMonth, getLiabilityRecurringExpenses } from "../lib/format";
+import { formatManwon, formatMonthLabel, formatPct, currentMonth, aggregateCashflowByMonth, getLiabilityRecurringExpenses, computeAmortization } from "../lib/format";
 import { getIncomeCategory, getExpenseCategory } from "../lib/constants";
 import { CashflowChart, ExpenseBreakdown, SavingsRateChart } from "../components/charts";
 import { CashflowItemForm } from "../components/forms";
@@ -20,8 +20,9 @@ export default function Cashflow() {
   const [filterMode, setFilterMode] = useState("all"); // all | recurring | single
   const [selectedMonth, setSelectedMonth] = useState(null); // null이면 "최근 달" 자동 선택
 
-  const liabilityExpenses = getLiabilityRecurringExpenses(liabilities);
+  const liabilityExpenses = getLiabilityRecurringExpenses(liabilities, cashflowItems);
   const effectiveItems = [...cashflowItems, ...liabilityExpenses];
+  const recurringLiabilityCount = liabilities.filter((l) => computeAmortization(l.amount, l.interest_rate, l.term_months)).length;
 
   const monthly = aggregateCashflowByMonth(effectiveItems);
   const latestMonth = monthly.length > 0 ? monthly[monthly.length - 1].month : currentMonth();
@@ -114,9 +115,9 @@ export default function Cashflow() {
           />
         )}
 
-        {liabilityExpenses.length > 0 && (
+        {recurringLiabilityCount > 0 && (
           <p className="form-hint" style={{ marginTop: 12 }}>
-            부채의 월 상환액 {liabilityExpenses.length}건이 이번 달 지출에 "대출상환" 고정지출로 자동 반영되고 있어요.
+            부채 {recurringLiabilityCount}건의 월 상환액이 각 달의 지출에 "대출상환" 고정지출로 자동 반영되고 있어요.
           </p>
         )}
       </div>
@@ -196,7 +197,7 @@ export default function Cashflow() {
         ) : (
           <div className="ledger-table">
             <div className="ledger-row ledger-head">
-              <span>월</span><span>구분</span><span>메모</span><span className="num">금액</span><span></span>
+              <span></span><span>월</span><span>구분</span><span>메모</span><span className="num">금액</span><span></span>
             </div>
             {itemsSorted.map((it) =>
               editingId === it.id ? (
@@ -209,6 +210,7 @@ export default function Cashflow() {
                 </div>
               ) : (
                 <div className="ledger-row" key={it.id}>
+                  <span></span>
                   <span data-label="월" className="muted">{formatMonthLabel(it.month)}</span>
                   <span data-label="구분">
                     {(() => {

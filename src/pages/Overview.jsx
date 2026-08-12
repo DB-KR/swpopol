@@ -86,7 +86,7 @@ export default function Overview() {
   const realEstateSegments = computeGaugeSegments(snapshots, realEstateTarget, realEstateTotal, getYearColor, "real_estate_total");
   const financialSegments = computeGaugeSegments(snapshots, financialTarget, financialTotal, getYearColor, "financial_total");
 
-  const monthlyCashflow = aggregateCashflowByMonth([...cashflowItems, ...getLiabilityRecurringExpenses(liabilities)]);
+  const monthlyCashflow = aggregateCashflowByMonth([...cashflowItems, ...getLiabilityRecurringExpenses(liabilities, cashflowItems)]);
 
   const sums = {};
   assets.forEach((a) => { sums[a.category] = (sums[a.category] || 0) + Number(a.value || 0); });

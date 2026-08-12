@@ -162,27 +162,29 @@ export function computeGaugeSegments(snapshots, targetAmount, currentValue, colo
   });
 }
 
-// 부채(대출)의 월 상환액을 이번 달 "고정지출"로 자동 반영하기 위한 가상 항목을 만듭니다.
+// 부채(대출)의 월 상환액을 "고정지출"로 자동 반영하기 위한 가상 항목을 만듭니다.
 // DB에 실제로 저장하지 않고, 화면에서 계산할 때마다 만들어 합칩니다.
-export function getLiabilityRecurringExpenses(liabilities) {
-  const month = currentMonth();
-  return liabilities
-    .map((l) => {
-      const a = computeAmortization(l.amount, l.interest_rate, l.term_months);
-      if (!a) return null;
-      return {
-        id: `liability-${l.id}`,
-        type: "expense",
-        category: "loan_repayment",
-        amount: a.monthlyPayment,
-        month,
-        memo: l.name,
-        is_recurring: true,
-        created_at: l.created_at,
-        virtual: true,
-      };
-    })
-    .filter(Boolean);
+// 이번 달뿐 아니라 실제 현금흐름 기록이 있는 과거 달에도 똑같이 반영해서,
+// 월별 합계·그래프가 과거 달만 상환액이 빠진 채로 계산되지 않도록 합니다.
+export function getLiabilityRecurringExpenses(liabilities, cashflowItems = []) {
+  const months = new Set(cashflowItems.map((c) => c.month));
+  months.add(currentMonth());
+
+  return liabilities.flatMap((l) => {
+    const a = computeAmortization(l.amount, l.interest_rate, l.term_months);
+    if (!a) return [];
+    return [...months].map((month) => ({
+      id: `liability-${l.id}-${month}`,
+      type: "expense",
+      category: "loan_repayment",
+      amount: a.monthlyPayment,
+      month,
+      memo: l.name,
+      is_recurring: true,
+      created_at: l.created_at,
+      virtual: true,
+    }));
+  });
 }
 
 // 목표 설정일(createdAt)부터 목표일(targetDate)까지의 기간 중 "남은 비율"과
