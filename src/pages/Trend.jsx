@@ -11,7 +11,10 @@ export default function Trend() {
   const [showForm, setShowForm] = useState(false);
   const [justSnapshotted, setJustSnapshotted] = useState(false);
 
+  const realEstateTotal = assets.filter((a) => a.category === "realestate").reduce((s, a) => s + Number(a.value || 0), 0);
   const totalAssets = assets.reduce((s, a) => s + Number(a.value || 0), 0);
+  const financialTotal = totalAssets - realEstateTotal;
+
   const trendData = [...snapshots].sort((a, b) => a.month.localeCompare(b.month));
   const hasSnapshotThisMonth = trendData.some((s) => s.month === currentMonth());
 
@@ -24,7 +27,7 @@ export default function Trend() {
   })();
 
   async function handleQuickSnapshot() {
-    await saveSnapshot(currentMonth(), totalAssets);
+    await saveSnapshot(currentMonth(), totalAssets, realEstateTotal, financialTotal);
     setJustSnapshotted(true);
     setTimeout(() => setJustSnapshotted(false), 1800);
   }
@@ -59,8 +62,9 @@ export default function Trend() {
 
         {showForm && (
           <SnapshotForm
-            defaultTotal={totalAssets}
-            onSubmit={async (m, t) => { await saveSnapshot(m, t); setShowForm(false); }}
+            defaultRealEstate={realEstateTotal}
+            defaultFinancial={financialTotal}
+            onSubmit={async (m, t, re, fi) => { await saveSnapshot(m, t, re, fi); setShowForm(false); }}
             onCancel={() => setShowForm(false)}
           />
         )}
