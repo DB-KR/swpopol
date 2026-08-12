@@ -35,6 +35,14 @@ export default function Sidebar({ open, onClose, onLogout, userEmail, theme, tog
     <>
       {open && <div className="sidebar-backdrop" onClick={onClose} />}
       <aside className={`sidebar ${open ? "open" : ""}`}>
+        <button
+          className="sidebar-edge-toggle"
+          onClick={toggleCollapsed}
+          aria-label={collapsed ? "사이드바 펼치기" : "사이드바 접기"}
+        >
+          {collapsed ? <ChevronsRight size={14} /> : <ChevronsLeft size={14} />}
+        </button>
+
         <div className="sidebar-head">
           <div className="sidebar-head-text">
             <span className="eyebrow">PERSONAL ASSET PASSBOOK</span>
@@ -81,9 +89,6 @@ export default function Sidebar({ open, onClose, onLogout, userEmail, theme, tog
           {userEmail && <span className="sidebar-email">{userEmail}</span>}
           <button className="link-btn" onClick={toggleTheme} title={collapsed ? (theme === "dark" ? "라이트 모드" : "다크 모드") : undefined}>
             {theme === "dark" ? <Sun size={13} /> : <Moon size={13} />} <span className="sidebar-label">{theme === "dark" ? "라이트 모드" : "다크 모드"}</span>
-          </button>
-          <button className="sidebar-collapse-btn" onClick={toggleCollapsed} aria-label={collapsed ? "사이드바 펼치기" : "사이드바 접기"}>
-            {collapsed ? <ChevronsRight size={14} /> : <ChevronsLeft size={14} />} <span className="sidebar-label">{collapsed ? "펼치기" : "접기"}</span>
           </button>
           <button className="link-btn" onClick={onLogout} title={collapsed ? "로그아웃" : undefined}>
             <LogOut size={13} /> <span className="sidebar-label">로그아웃</span>
