@@ -4,9 +4,12 @@ import { useData } from "../context/DataContext";
 import { CATEGORIES } from "../lib/constants";
 import { formatManwon } from "../lib/format";
 
+// 부동산은 조금씩 사고팔 수 있는 자산이 아니라서 리밸런싱 대상에서 제외합니다.
+const REBALANCE_CATEGORIES = CATEGORIES.filter((c) => c.key !== "realestate");
+
 function AllocationTargetForm({ initialTargets, onSubmit, onCancel }) {
   const [values, setValues] = useState(
-    CATEGORIES.reduce((acc, c) => {
+    REBALANCE_CATEGORIES.reduce((acc, c) => {
       const found = initialTargets.find((t) => t.category === c.key);
       acc[c.key] = found ? found.target_pct : "";
       return acc;
@@ -14,19 +17,19 @@ function AllocationTargetForm({ initialTargets, onSubmit, onCancel }) {
   );
   const [saving, setSaving] = useState(false);
 
-  const sum = CATEGORIES.reduce((s, c) => s + (Number(values[c.key]) || 0), 0);
+  const sum = REBALANCE_CATEGORIES.reduce((s, c) => s + (Number(values[c.key]) || 0), 0);
 
   async function submit(e) {
     e.preventDefault();
     setSaving(true);
-    await onSubmit(CATEGORIES.map((c) => ({ category: c.key, targetPct: values[c.key] })));
+    await onSubmit(REBALANCE_CATEGORIES.map((c) => ({ category: c.key, targetPct: values[c.key] })));
     setSaving(false);
   }
 
   return (
     <form className="ledger-form" onSubmit={submit}>
       <div className="form-row">
-        {CATEGORIES.map((c) => (
+        {REBALANCE_CATEGORIES.map((c) => (
           <label key={c.key}>
             {c.label} (%)
             <input
@@ -57,12 +60,14 @@ export default function Rebalance() {
   const [contribution, setContribution] = useState("");
 
   const sums = {};
-  assets.forEach((a) => { sums[a.category] = (sums[a.category] || 0) + Number(a.value || 0); });
+  assets
+    .filter((a) => a.category !== "realestate")
+    .forEach((a) => { sums[a.category] = (sums[a.category] || 0) + Number(a.value || 0); });
   const totalAssets = Object.values(sums).reduce((s, v) => s + v, 0);
 
-  const hasTargets = allocationTargets.length > 0 && allocationTargets.some((t) => Number(t.target_pct) > 0);
+  const hasTargets = allocationTargets.some((t) => t.category !== "realestate" && Number(t.target_pct) > 0);
 
-  const rows = CATEGORIES.map((c) => {
+  const rows = REBALANCE_CATEGORIES.map((c) => {
     const current = sums[c.key] || 0;
     const currentPct = totalAssets > 0 ? (current / totalAssets) * 100 : 0;
     const target = allocationTargets.find((t) => t.category === c.key);
@@ -91,6 +96,7 @@ export default function Rebalance() {
             <button className="link-btn" onClick={() => setShowForm(true)}><Pencil size={12} /> 수정</button>
           )}
         </div>
+        <p className="form-hint" style={{ marginTop: -8, marginBottom: 10 }}>부동산은 매수·매도 단위가 커서 제외하고, 금융자산(주식·현금·연금) 안에서의 비중이에요</p>
 
         {showForm ? (
           <AllocationTargetForm
