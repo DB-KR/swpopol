@@ -278,7 +278,7 @@ export function ExpenseBreakdown({ allocation }) {
           </PieChart>
         </ResponsiveContainer>
         <div className="donut-center">
-          <span className="donut-center-label">이번 달 지출</span>
+          <span className="donut-center-label">합계</span>
           <span className="donut-center-value">{formatManwon(total)}</span>
         </div>
       </div>

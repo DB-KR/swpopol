@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { TrendingUp, TrendingDown, Target, Check, Circle, Pencil, Plus, Trash2, ArrowUpRight, ArrowDownRight, Layers, CreditCard } from "lucide-react";
 import { useData } from "../context/DataContext";
 import { CATEGORIES, ASSET_MILESTONES, getYearColor } from "../lib/constants";
-import { formatManwon, formatMonthLabel, formatPct, formatDate, currentMonth, aggregateCashflowByMonth, computeGaugeSegments, computeAnnualReport } from "../lib/format";
+import { formatManwon, formatMonthLabel, formatPct, formatDate, currentMonth, aggregateCashflowByMonth, computeGaugeSegments, computeAnnualReport, getLiabilityRecurringExpenses } from "../lib/format";
 import { useCountUp } from "../lib/useCountUp";
 import { useFxRates } from "../lib/useFxRates";
 import { AllocationDonut, HoldingsBar, TrendArea } from "../components/charts";
@@ -78,7 +78,7 @@ export default function Overview() {
   const realEstateSegments = computeGaugeSegments(snapshots, realEstateTarget, realEstateTotal, getYearColor, "real_estate_total");
   const financialSegments = computeGaugeSegments(snapshots, financialTarget, financialTotal, getYearColor, "financial_total");
 
-  const monthlyCashflow = aggregateCashflowByMonth(cashflowItems);
+  const monthlyCashflow = aggregateCashflowByMonth([...cashflowItems, ...getLiabilityRecurringExpenses(liabilities)]);
   const savingsRate = (() => {
     if (monthlyCashflow.length === 0) return null;
     const latest = monthlyCashflow[monthlyCashflow.length - 1];

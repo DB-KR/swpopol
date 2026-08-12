@@ -1,21 +1,37 @@
 import React, { useState } from "react";
-import { Plus, Trash2, Pencil } from "lucide-react";
+import { Plus, Trash2, Pencil, TrendingUp, TrendingDown } from "lucide-react";
 import { useData } from "../context/DataContext";
-import { formatManwon, formatMonthLabel, currentMonth, aggregateCashflowByMonth } from "../lib/format";
+import { formatManwon, formatMonthLabel, formatPct, currentMonth, aggregateCashflowByMonth, getLiabilityRecurringExpenses } from "../lib/format";
 import { getIncomeCategory, getExpenseCategory } from "../lib/constants";
 import { CashflowChart, ExpenseBreakdown, SavingsRateChart } from "../components/charts";
 import { CashflowItemForm } from "../components/forms";
 
+function matchesFilter(it, mode) {
+  if (mode === "all") return true;
+  if (mode === "recurring") return !!it.is_recurring;
+  return !it.is_recurring;
+}
+
 export default function Cashflow() {
-  const { cashflowItems, loading, addCashflowItem, updateCashflowItem, deleteCashflowItem } = useData();
+  const { liabilities, cashflowItems, loading, addCashflowItem, updateCashflowItem, deleteCashflowItem } = useData();
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const [filterMode, setFilterMode] = useState("all"); // all | recurring | single
 
-  const monthly = aggregateCashflowByMonth(cashflowItems);
+  const liabilityExpenses = getLiabilityRecurringExpenses(liabilities);
+  const effectiveItems = [...cashflowItems, ...liabilityExpenses];
+
+  const monthly = aggregateCashflowByMonth(effectiveItems);
   const latestMonth = monthly.length > 0 ? monthly[monthly.length - 1].month : currentMonth();
 
   const latest = monthly.find((m) => m.month === latestMonth);
   const savingsRate = latest && latest.income > 0 ? ((latest.income - latest.expense) / latest.income) * 100 : null;
+
+  const prevMonthData = monthly.length > 1 ? monthly[monthly.length - 2] : null;
+  const expenseDiff = latest && prevMonthData ? latest.expense - prevMonthData.expense : null;
+  const expenseDiffPct = latest && prevMonthData && prevMonthData.expense > 0
+    ? ((latest.expense - prevMonthData.expense) / prevMonthData.expense) * 100
+    : null;
 
   const savingsRateSeries = monthly
     .filter((m) => m.income > 0)
@@ -23,8 +39,8 @@ export default function Cashflow() {
 
   const expenseAllocation = (() => {
     const sums = {};
-    cashflowItems
-      .filter((it) => it.type === "expense" && it.month === latestMonth)
+    effectiveItems
+      .filter((it) => it.type === "expense" && it.month === latestMonth && matchesFilter(it, filterMode))
       .forEach((it) => { sums[it.category] = (sums[it.category] || 0) + Number(it.amount || 0); });
     return Object.entries(sums)
       .map(([key, value]) => ({ key, value, label: getExpenseCategory(key).label, color: getExpenseCategory(key).color }))
@@ -32,7 +48,9 @@ export default function Cashflow() {
       .sort((a, b) => b.value - a.value);
   })();
 
-  const itemsSorted = [...cashflowItems].sort((a, b) => b.month.localeCompare(a.month) || b.created_at.localeCompare(a.created_at));
+  const itemsSorted = effectiveItems
+    .filter((it) => matchesFilter(it, filterMode))
+    .sort((a, b) => b.month.localeCompare(a.month) || String(b.created_at).localeCompare(String(a.created_at)));
 
   if (loading) return <div className="loading-screen">불러오는 중…</div>;
 
@@ -58,13 +76,38 @@ export default function Cashflow() {
             onCancel={() => setShowForm(false)}
           />
         )}
+
+        {liabilityExpenses.length > 0 && (
+          <p className="form-hint" style={{ marginTop: 12 }}>
+            부채의 월 상환액 {liabilityExpenses.length}건이 이번 달 지출에 "대출상환" 고정지출로 자동 반영되고 있어요.
+          </p>
+        )}
+      </div>
+
+      <div className="tab-row">
+        <button className={`tab-btn ${filterMode === "all" ? "active" : ""}`} onClick={() => setFilterMode("all")}>전체</button>
+        <button className={`tab-btn ${filterMode === "recurring" ? "active" : ""}`} onClick={() => setFilterMode("recurring")}>고정지출</button>
+        <button className={`tab-btn ${filterMode === "single" ? "active" : ""}`} onClick={() => setFilterMode("single")}>단일지출</button>
       </div>
 
       <div className="card">
         <div className="card-head">
-          <h2>고정지출 구성</h2>
+          <h2>이번 달 지출</h2>
           <span className="card-sub">{formatMonthLabel(latestMonth)} 기준</span>
         </div>
+        {filterMode === "all" && expenseDiff !== null && (
+          <p className={`form-hint ${expenseDiff > 0 ? "neg" : expenseDiff < 0 ? "pos" : ""}`} style={{ marginBottom: 10 }}>
+            {expenseDiff === 0 ? (
+              "전월과 지출이 같아요"
+            ) : (
+              <>
+                {expenseDiff > 0 ? <TrendingUp size={12} style={{ verticalAlign: -1 }} /> : <TrendingDown size={12} style={{ verticalAlign: -1 }} />}{" "}
+                전월대비 {formatManwon(Math.abs(expenseDiff))} {expenseDiff > 0 ? "더 썼어요" : "덜 썼어요"}
+                {expenseDiffPct !== null && ` (${formatPct(expenseDiffPct)})`}
+              </>
+            )}
+          </p>
+        )}
         <ExpenseBreakdown allocation={expenseAllocation} />
       </div>
 
@@ -108,18 +151,22 @@ export default function Cashflow() {
                       const cat = it.type === "income" ? getIncomeCategory(it.category) : getExpenseCategory(it.category);
                       return (
                         <span className="tag" style={{ color: cat.color, borderColor: cat.color }}>
-                          {it.type === "income" ? "수입" : "지출"} · {cat.label}
+                          {it.type === "income" ? "수입" : "지출"} · {cat.label}{it.is_recurring ? " · 고정" : ""}
                         </span>
                       );
                     })()}
                   </span>
-                  <span className="muted">{it.memo || "-"}</span>
+                  <span className="muted">{it.memo || "-"}{it.virtual ? " (자동)" : ""}</span>
                   <span className={`num ${it.type === "income" ? "pos" : "neg"}`}>
                     {it.type === "income" ? "+" : "-"}{formatManwon(it.amount)}
                   </span>
                   <span className="row-actions">
-                    <button className="icon-btn" onClick={() => { setEditingId(it.id); setShowForm(false); }} aria-label="수정"><Pencil size={13} /></button>
-                    <button className="icon-btn" onClick={() => deleteCashflowItem(it.id)} aria-label="삭제"><Trash2 size={13} /></button>
+                    {!it.virtual && (
+                      <>
+                        <button className="icon-btn" onClick={() => { setEditingId(it.id); setShowForm(false); }} aria-label="수정"><Pencil size={13} /></button>
+                        <button className="icon-btn" onClick={() => deleteCashflowItem(it.id)} aria-label="삭제"><Trash2 size={13} /></button>
+                      </>
+                    )}
                   </span>
                 </div>
               )

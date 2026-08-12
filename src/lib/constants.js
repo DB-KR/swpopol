@@ -18,6 +18,7 @@ export const EXPENSE_CATEGORIES = [
   { key: "living", label: "생활비", color: "#B23A2F" },
   { key: "telecom", label: "통신비", color: "#5C6F9E" },
   { key: "insurance", label: "보험비", color: "#B08D57" },
+  { key: "loan_repayment", label: "대출상환", color: "#8B4A5C" },
   { key: "other_expense", label: "기타지출", color: "#8A7F6E" },
 ];
 

@@ -162,7 +162,28 @@ export function computeGaugeSegments(snapshots, targetAmount, currentValue, colo
   });
 }
 
-// 원리금균등상환 방식으로 월 상환액/총이자/총상환액을 계산합니다.
+// 부채(대출)의 월 상환액을 이번 달 "고정지출"로 자동 반영하기 위한 가상 항목을 만듭니다.
+// DB에 실제로 저장하지 않고, 화면에서 계산할 때마다 만들어 합칩니다.
+export function getLiabilityRecurringExpenses(liabilities) {
+  const month = currentMonth();
+  return liabilities
+    .map((l) => {
+      const a = computeAmortization(l.amount, l.interest_rate, l.term_months);
+      if (!a) return null;
+      return {
+        id: `liability-${l.id}`,
+        type: "expense",
+        category: "loan_repayment",
+        amount: a.monthlyPayment,
+        month,
+        memo: l.name,
+        is_recurring: true,
+        created_at: l.created_at,
+        virtual: true,
+      };
+    })
+    .filter(Boolean);
+}
 // principal(만원), annualRatePct(연이자율 %), termMonths(남은 개월 수)
 export function computeAmortization(principal, annualRatePct, termMonths) {
   const P = Number(principal) || 0;

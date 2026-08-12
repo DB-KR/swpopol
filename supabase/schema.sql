@@ -107,6 +107,9 @@ create table if not exists public.cashflow_items (
   created_at timestamptz not null default now()
 );
 
+-- 고정지출/단일지출 구분
+alter table public.cashflow_items add column if not exists is_recurring boolean not null default false;
+
 alter table public.assets enable row level security;
 alter table public.liabilities enable row level security;
 alter table public.allocation_targets enable row level security;

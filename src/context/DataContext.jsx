@@ -167,6 +167,7 @@ export function DataProvider({ children }) {
       category: form.category,
       amount: Number(form.amount) || 0,
       memo: (form.memo || "").trim(),
+      is_recurring: !!form.isRecurring,
     });
     if (err) { setError("현금흐름 항목 추가에 실패했어요."); return; }
     await refresh();
@@ -181,6 +182,7 @@ export function DataProvider({ children }) {
         category: form.category,
         amount: Number(form.amount) || 0,
         memo: (form.memo || "").trim(),
+        is_recurring: !!form.isRecurring,
       })
       .eq("id", id);
     if (err) { setError("현금흐름 항목 수정에 실패했어요."); return; }

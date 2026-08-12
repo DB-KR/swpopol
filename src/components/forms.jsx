@@ -232,6 +232,7 @@ export function CashflowItemForm({ initial, onSubmit, onCancel }) {
   const [month, setMonth] = useState(initial?.month || currentMonth());
   const [amount, setAmount] = useState(initial?.amount ?? "");
   const [memo, setMemo] = useState(initial?.memo || "");
+  const [isRecurring, setIsRecurring] = useState(initial?.is_recurring || false);
   const [saving, setSaving] = useState(false);
 
   const categoryOptions = type === "income" ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
@@ -246,7 +247,7 @@ export function CashflowItemForm({ initial, onSubmit, onCancel }) {
     e.preventDefault();
     if (!month || amount === "") return;
     setSaving(true);
-    await onSubmit({ type, category, month, amount, memo });
+    await onSubmit({ type, category, month, amount, memo, isRecurring });
     setSaving(false);
   }
 
@@ -283,6 +284,12 @@ export function CashflowItemForm({ initial, onSubmit, onCancel }) {
           <input type="text" value={memo} onChange={(e) => setMemo(e.target.value)} placeholder="예: OO통신, OO보험" />
         </label>
       </div>
+      {type === "expense" && (
+        <label className="checkbox-row">
+          <input type="checkbox" checked={isRecurring} onChange={(e) => setIsRecurring(e.target.checked)} />
+          고정지출로 표시 (매달 반복되는 지출)
+        </label>
+      )}
       <div className="form-actions">
         <button type="button" className="btn-ghost" onClick={onCancel}>취소</button>
         <button type="submit" className="btn-primary" disabled={saving}>{initial ? "수정 완료" : "항목 추가"}</button>
