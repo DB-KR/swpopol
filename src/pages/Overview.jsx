@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { TrendingUp, TrendingDown, Target, Check, Circle, Pencil, Plus, Trash2, ArrowUpRight, ArrowDownRight, Layers, CreditCard } from "lucide-react";
+import { TrendingUp, TrendingDown, Target, Check, Circle, Pencil, Plus, Trash2, ArrowUpRight, ArrowDownRight, Layers, CreditCard, Activity } from "lucide-react";
 import { useData } from "../context/DataContext";
 import { CATEGORIES, ASSET_MILESTONES, getYearColor } from "../lib/constants";
 import { formatManwon, formatMonthLabel, formatPct, formatDate, currentMonth, aggregateCashflowByMonth, computeGaugeSegments, computeAnnualReport, getLiabilityRecurringExpenses } from "../lib/format";
@@ -10,6 +10,7 @@ import { AllocationDonut, HoldingsBar, TrendArea } from "../components/charts";
 import { GoalForm, SnapshotForm } from "../components/forms";
 import MiniCalendar from "../components/MiniCalendar";
 import Stamp from "../components/Stamp";
+import PageSkeleton from "../components/PageSkeleton";
 
 function GaugeBlock({ label, total, target, segments }) {
   const pct = target > 0 ? (total / target) * 100 : null;
@@ -129,7 +130,7 @@ export default function Overview() {
     setTimeout(() => setJustSnapshotted(false), 1800);
   }
 
-  if (loading) return <div className="loading-screen">불러오는 중…</div>;
+  if (loading) return <PageSkeleton cards={4} hero />;
 
   return (
     <div className="page">
@@ -320,7 +321,7 @@ export default function Overview() {
         </div>
         {recentActivity.length === 0 ? (
           <div className="empty-state">
-            <div className="empty-ring" />
+              <div className="empty-ring"><Activity size={20} /></div>
             <p>아직 활동 내역이 없어요.</p>
           </div>
         ) : (

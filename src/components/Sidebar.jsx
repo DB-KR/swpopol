@@ -1,7 +1,7 @@
 import React from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { LayoutDashboard, ClipboardList, Wallet, Briefcase, Scale, LineChart, Settings as SettingsIcon, LogOut, X, Moon, Sun } from "lucide-react";
+import { LayoutDashboard, ClipboardList, Wallet, Briefcase, Scale, LineChart, Settings as SettingsIcon, LogOut, X, Moon, Sun, ChevronsLeft, ChevronsRight } from "lucide-react";
 
 const MENU_GROUPS = [
   {
@@ -28,7 +28,7 @@ const MENU_GROUPS = [
   },
 ];
 
-export default function Sidebar({ open, onClose, onLogout, userEmail, theme, toggleTheme }) {
+export default function Sidebar({ open, onClose, onLogout, userEmail, theme, toggleTheme, collapsed, toggleCollapsed }) {
   const location = useLocation();
 
   return (
@@ -36,7 +36,7 @@ export default function Sidebar({ open, onClose, onLogout, userEmail, theme, tog
       {open && <div className="sidebar-backdrop" onClick={onClose} />}
       <aside className={`sidebar ${open ? "open" : ""}`}>
         <div className="sidebar-head">
-          <div>
+          <div className="sidebar-head-text">
             <span className="eyebrow">PERSONAL ASSET PASSBOOK</span>
             <h1>MY 자산 통장</h1>
           </div>
@@ -59,6 +59,7 @@ export default function Sidebar({ open, onClose, onLogout, userEmail, theme, tog
                     end={item.to === "/"}
                     className={({ isActive }) => `sidebar-link${isActive ? " active" : ""}`}
                     onClick={onClose}
+                    title={collapsed ? item.label : undefined}
                   >
                     {active && (
                       <motion.span
@@ -68,7 +69,7 @@ export default function Sidebar({ open, onClose, onLogout, userEmail, theme, tog
                       />
                     )}
                     <Icon size={16} />
-                    <span>{item.label}</span>
+                    <span className="sidebar-label">{item.label}</span>
                   </NavLink>
                 );
               })}
@@ -78,11 +79,14 @@ export default function Sidebar({ open, onClose, onLogout, userEmail, theme, tog
 
         <div className="sidebar-foot">
           {userEmail && <span className="sidebar-email">{userEmail}</span>}
-          <button className="link-btn" onClick={toggleTheme}>
-            {theme === "dark" ? <Sun size={13} /> : <Moon size={13} />} {theme === "dark" ? "라이트 모드" : "다크 모드"}
+          <button className="link-btn" onClick={toggleTheme} title={collapsed ? (theme === "dark" ? "라이트 모드" : "다크 모드") : undefined}>
+            {theme === "dark" ? <Sun size={13} /> : <Moon size={13} />} <span className="sidebar-label">{theme === "dark" ? "라이트 모드" : "다크 모드"}</span>
           </button>
-          <button className="link-btn" onClick={onLogout}>
-            <LogOut size={13} /> 로그아웃
+          <button className="sidebar-collapse-btn" onClick={toggleCollapsed} aria-label={collapsed ? "사이드바 펼치기" : "사이드바 접기"}>
+            {collapsed ? <ChevronsRight size={14} /> : <ChevronsLeft size={14} />} <span className="sidebar-label">{collapsed ? "펼치기" : "접기"}</span>
+          </button>
+          <button className="link-btn" onClick={onLogout} title={collapsed ? "로그아웃" : undefined}>
+            <LogOut size={13} /> <span className="sidebar-label">로그아웃</span>
           </button>
         </div>
       </aside>

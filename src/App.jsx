@@ -49,12 +49,31 @@ function AnimatedRoutes() {
 function Shell({ theme, toggleTheme }) {
   const [session, setSession] = useState(undefined);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(() => {
+    try {
+      return localStorage.getItem("sidebarCollapsed") === "true";
+    } catch (e) {
+      return false;
+    }
+  });
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setSession(data.session));
     const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => setSession(s));
     return () => sub.subscription.unsubscribe();
   }, []);
+
+  function toggleCollapsed() {
+    setCollapsed((c) => {
+      const next = !c;
+      try {
+        localStorage.setItem("sidebarCollapsed", String(next));
+      } catch (e) {
+        // ignore write failures
+      }
+      return next;
+    });
+  }
 
   if (session === undefined) {
     return <div className="loading-screen">불러오는 중…</div>;
@@ -66,7 +85,7 @@ function Shell({ theme, toggleTheme }) {
 
   return (
     <DataProvider>
-      <div className="shell">
+      <div className={`shell ${collapsed ? "collapsed" : ""}`}>
         <Sidebar
           open={sidebarOpen}
           onClose={() => setSidebarOpen(false)}
@@ -74,6 +93,8 @@ function Shell({ theme, toggleTheme }) {
           userEmail={session.user.email}
           theme={theme}
           toggleTheme={toggleTheme}
+          collapsed={collapsed}
+          toggleCollapsed={toggleCollapsed}
         />
         <div className="topbar">
           <button className="icon-btn" onClick={() => setSidebarOpen(true)} aria-label="메뉴 열기">

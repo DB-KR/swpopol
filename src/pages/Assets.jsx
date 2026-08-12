@@ -1,10 +1,11 @@
 import React, { useState } from "react";
-import { Plus, Pencil, Trash2, TrendingUp, TrendingDown } from "lucide-react";
+import { Plus, Pencil, Trash2, TrendingUp, TrendingDown, Wallet, CreditCard } from "lucide-react";
 import { useData } from "../context/DataContext";
 import { getCategory, getLiabilityCategory } from "../lib/constants";
 import { formatManwon, formatCurrencyAmount, formatPct, formatDate, computeAssetReturns, computeAmortization } from "../lib/format";
 import { AssetForm, LiabilityForm } from "../components/forms";
 import { useFxRates } from "../lib/useFxRates";
+import PageSkeleton from "../components/PageSkeleton";
 
 export default function Assets() {
   const {
@@ -24,7 +25,7 @@ export default function Assets() {
   const totalLiabilities = liabilities.reduce((s, l) => s + Number(l.amount || 0), 0);
   const netWorth = totalAssets - totalLiabilities;
 
-  if (loading) return <div className="loading-screen">불러오는 중…</div>;
+  if (loading) return <PageSkeleton cards={3} />;
 
   return (
     <div className="page">
@@ -69,7 +70,7 @@ export default function Assets() {
 
         {assets.length === 0 && !showAdd ? (
           <div className="empty-state">
-            <div className="empty-ring" />
+            <div className="empty-ring"><Wallet size={20} /></div>
             <p>아직 등록된 자산이 없어요. 첫 자산을 기록해보세요.</p>
           </div>
         ) : (
@@ -93,14 +94,14 @@ export default function Assets() {
               return (
                 <React.Fragment key={a.id}>
                   <div className="ledger-row">
-                    <span>
+                    <span data-label="구분">
                       <span className="tag" style={{ color: getCategory(a.category).color, borderColor: getCategory(a.category).color }}>
                         {getCategory(a.category).label}
                       </span>
                     </span>
-                    <span>{a.name}{a.quantity ? <span className="muted"> · {a.quantity}주</span> : null}</span>
-                    <span className="muted">{a.memo || "-"}</span>
-                    <span className="num">
+                    <span data-label="자산명">{a.name}{a.quantity ? <span className="muted"> · {a.quantity}주</span> : null}</span>
+                    <span data-label="메모" className="muted">{a.memo || "-"}</span>
+                    <span data-label="평가금액" className="num">
                       {formatManwon(a.value)}
                       {r && (
                         <span className={`inline-return ${r.totalReturnPct >= 0 ? "pos" : "neg"}`}>
@@ -138,7 +139,7 @@ export default function Assets() {
 
         {liabilities.length === 0 && !showAddLiability ? (
           <div className="empty-state">
-            <div className="empty-ring" />
+            <div className="empty-ring"><CreditCard size={20} /></div>
             <p>등록된 부채가 없어요.</p>
           </div>
         ) : (
@@ -158,14 +159,14 @@ export default function Assets() {
               ) : (
                 <React.Fragment key={l.id}>
                   <div className="ledger-row">
-                    <span>
+                    <span data-label="구분">
                       <span className="tag" style={{ color: getLiabilityCategory(l.category).color, borderColor: getLiabilityCategory(l.category).color }}>
                         {getLiabilityCategory(l.category).label}
                       </span>
                     </span>
-                    <span>{l.name}{l.interest_rate ? <span className="muted"> · 연 {l.interest_rate}%</span> : null}</span>
-                    <span className="muted">{l.memo || "-"}</span>
-                    <span className="num neg">{formatManwon(l.amount)}</span>
+                    <span data-label="부채명">{l.name}{l.interest_rate ? <span className="muted"> · 연 {l.interest_rate}%</span> : null}</span>
+                    <span data-label="메모" className="muted">{l.memo || "-"}</span>
+                    <span data-label="잔액" className="num neg">{formatManwon(l.amount)}</span>
                     <span className="row-actions">
                       <button className="icon-btn" onClick={() => setEditingLiabilityId(l.id)} aria-label="수정"><Pencil size={13} /></button>
                       <button className="icon-btn" onClick={() => deleteLiability(l.id)} aria-label="삭제"><Trash2 size={13} /></button>

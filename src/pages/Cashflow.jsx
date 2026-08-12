@@ -1,10 +1,11 @@
 import React, { useState } from "react";
-import { Plus, Trash2, Pencil, TrendingUp, TrendingDown } from "lucide-react";
+import { Plus, Trash2, Pencil, TrendingUp, TrendingDown, Receipt } from "lucide-react";
 import { useData } from "../context/DataContext";
 import { formatManwon, formatMonthLabel, formatPct, currentMonth, aggregateCashflowByMonth, getLiabilityRecurringExpenses } from "../lib/format";
 import { getIncomeCategory, getExpenseCategory } from "../lib/constants";
 import { CashflowChart, ExpenseBreakdown, SavingsRateChart } from "../components/charts";
 import { CashflowItemForm } from "../components/forms";
+import PageSkeleton from "../components/PageSkeleton";
 
 function matchesFilter(it, mode) {
   if (mode === "all") return true;
@@ -86,7 +87,7 @@ export default function Cashflow() {
     .filter((it) => matchesFilter(it, filterMode))
     .sort((a, b) => b.month.localeCompare(a.month) || String(b.created_at).localeCompare(String(a.created_at)));
 
-  if (loading) return <div className="loading-screen">불러오는 중…</div>;
+  if (loading) return <PageSkeleton cards={4} />;
 
   return (
     <div className="page">
@@ -160,12 +161,12 @@ export default function Cashflow() {
             </div>
             {expenseComparison.map((r) => (
               <div className="expense-compare-row" key={r.key}>
-                <span>
+                <span data-label="카테고리">
                   <span className="tag" style={{ color: r.color, borderColor: r.color }}>{r.label}</span>
                 </span>
-                <span className="num">{formatManwon(r.current)}</span>
-                <span className="num muted">{formatManwon(r.prev)}</span>
-                <span className={`num ${r.diff > 0 ? "neg" : r.diff < 0 ? "pos" : "muted"}`}>
+                <span data-label={formatMonthLabel(displayMonth)} className="num">{formatManwon(r.current)}</span>
+                <span data-label={formatMonthLabel(prevMonthData.month)} className="num muted">{formatManwon(r.prev)}</span>
+                <span data-label="증감" className={`num ${r.diff > 0 ? "neg" : r.diff < 0 ? "pos" : "muted"}`}>
                   {r.diff === 0 ? "-" : `${r.diff > 0 ? "+" : ""}${formatManwon(r.diff)}`}
                 </span>
               </div>
@@ -189,7 +190,7 @@ export default function Cashflow() {
 
         {itemsSorted.length === 0 ? (
           <div className="empty-state">
-            <div className="empty-ring" />
+            <div className="empty-ring"><Receipt size={20} /></div>
             <p>아직 기록된 항목이 없어요. 월급이나 생활비부터 추가해보세요.</p>
           </div>
         ) : (
@@ -208,8 +209,8 @@ export default function Cashflow() {
                 </div>
               ) : (
                 <div className="ledger-row" key={it.id}>
-                  <span className="muted">{formatMonthLabel(it.month)}</span>
-                  <span>
+                  <span data-label="월" className="muted">{formatMonthLabel(it.month)}</span>
+                  <span data-label="구분">
                     {(() => {
                       const cat = it.type === "income" ? getIncomeCategory(it.category) : getExpenseCategory(it.category);
                       return (
@@ -219,8 +220,8 @@ export default function Cashflow() {
                       );
                     })()}
                   </span>
-                  <span className="muted">{it.memo || "-"}{it.virtual ? " (자동)" : ""}</span>
-                  <span className={`num ${it.type === "income" ? "pos" : "neg"}`}>
+                  <span data-label="메모" className="muted">{it.memo || "-"}{it.virtual ? " (자동)" : ""}</span>
+                  <span data-label="금액" className={`num ${it.type === "income" ? "pos" : "neg"}`}>
                     {it.type === "income" ? "+" : "-"}{formatManwon(it.amount)}
                   </span>
                   <span className="row-actions">

@@ -1,10 +1,11 @@
 import React from "react";
-import { TrendingUp, TrendingDown } from "lucide-react";
+import { TrendingUp, TrendingDown, Briefcase } from "lucide-react";
 import { useData } from "../context/DataContext";
 import { formatManwon, formatCurrencyAmount, formatPct, computeAssetReturns } from "../lib/format";
 import { getYearColor } from "../lib/constants";
 import { useFxRates } from "../lib/useFxRates";
 import { AllocationDonut } from "../components/charts";
+import PageSkeleton from "../components/PageSkeleton";
 
 export default function Holdings() {
   const { assets, loading } = useData();
@@ -26,7 +27,7 @@ export default function Holdings() {
     .filter((c) => c.value > 0)
     .sort((a, b) => b.value - a.value);
 
-  if (loading) return <div className="loading-screen">불러오는 중…</div>;
+  if (loading) return <PageSkeleton cards={2} />;
 
   return (
     <div className="page">
@@ -38,7 +39,7 @@ export default function Holdings() {
 
         {stocks.length === 0 ? (
           <div className="empty-state">
-            <div className="empty-ring" />
+            <div className="empty-ring"><Briefcase size={20} /></div>
             <p>주식/ETF 카테고리 자산이 없어요. [자산 구성]에서 구분을 "주식/ETF"로 추가해보세요.</p>
           </div>
         ) : (
@@ -55,14 +56,14 @@ export default function Holdings() {
               const r = computeAssetReturns(a, fxRates);
               return (
                 <div className="holdings-row" key={a.id}>
-                  <span>{a.name}</span>
-                  <span className="num">{a.quantity || "-"}</span>
-                  <span className="num">{r ? formatCurrencyAmount(r.buy, a.currency) : "-"}</span>
-                  <span className="num">{r ? formatCurrencyAmount(r.sell, a.currency) : "-"}</span>
-                  <span className={`num ${r && r.gainManwon !== null ? (r.gainManwon >= 0 ? "pos" : "neg") : "muted"}`}>
+                  <span data-label="종목명">{a.name}</span>
+                  <span data-label="수량" className="num">{a.quantity || "-"}</span>
+                  <span data-label="매수가" className="num">{r ? formatCurrencyAmount(r.buy, a.currency) : "-"}</span>
+                  <span data-label="현재가" className="num">{r ? formatCurrencyAmount(r.sell, a.currency) : "-"}</span>
+                  <span data-label="평가손익" className={`num ${r && r.gainManwon !== null ? (r.gainManwon >= 0 ? "pos" : "neg") : "muted"}`}>
                     {r && r.gainManwon !== null ? `${r.gainManwon >= 0 ? "+" : ""}${formatManwon(r.gainManwon)}` : "-"}
                   </span>
-                  <span className={`num ${r ? (r.totalReturnPct >= 0 ? "pos" : "neg") : "muted"}`}>
+                  <span data-label="수익률" className={`num ${r ? (r.totalReturnPct >= 0 ? "pos" : "neg") : "muted"}`}>
                     {r ? (
                       <>
                         {r.totalReturnPct >= 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />} {formatPct(r.totalReturnPct)}

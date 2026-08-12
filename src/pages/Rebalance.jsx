@@ -1,8 +1,9 @@
 import React, { useState } from "react";
-import { Pencil } from "lucide-react";
+import { Pencil, Scale } from "lucide-react";
 import { useData } from "../context/DataContext";
 import { CATEGORIES } from "../lib/constants";
 import { formatManwon } from "../lib/format";
+import PageSkeleton from "../components/PageSkeleton";
 
 // 부동산은 조금씩 사고팔 수 있는 자산이 아니라서 리밸런싱 대상에서 제외합니다.
 const REBALANCE_CATEGORIES = CATEGORIES.filter((c) => c.key !== "realestate");
@@ -85,7 +86,7 @@ export default function Rebalance() {
     return { ...r, suggested };
   });
 
-  if (loading) return <div className="loading-screen">불러오는 중…</div>;
+  if (loading) return <PageSkeleton cards={2} />;
 
   return (
     <div className="page">
@@ -108,7 +109,7 @@ export default function Rebalance() {
           />
         ) : !hasTargets ? (
           <div className="empty-state">
-            <div className="empty-ring" />
+            <div className="empty-ring"><Scale size={20} /></div>
             <p>자산군별 목표 비중을 설정하면 현재 비중과 비교해드려요.</p>
             <button className="btn-primary" onClick={() => setShowForm(true)}>목표 비중 설정하기</button>
           </div>
@@ -119,12 +120,12 @@ export default function Rebalance() {
             </div>
             {rows.map((r) => (
               <div className="rebalance-row" key={r.key}>
-                <span>
+                <span data-label="자산군">
                   <span className="tag" style={{ color: r.color, borderColor: r.color }}>{r.label}</span>
                 </span>
-                <span className="num">{r.currentPct.toFixed(1)}%</span>
-                <span className="num">{r.targetPct.toFixed(1)}%</span>
-                <span className={`num ${r.deviation > 0.5 ? "neg" : r.deviation < -0.5 ? "pos" : "muted"}`}>
+                <span data-label="현재 비중" className="num">{r.currentPct.toFixed(1)}%</span>
+                <span data-label="목표 비중" className="num">{r.targetPct.toFixed(1)}%</span>
+                <span data-label="괴리" className={`num ${r.deviation > 0.5 ? "neg" : r.deviation < -0.5 ? "pos" : "muted"}`}>
                   {r.deviation > 0 ? "+" : ""}{r.deviation.toFixed(1)}%p
                 </span>
               </div>
@@ -153,13 +154,13 @@ export default function Rebalance() {
               </div>
               {suggestions.map((r) => (
                 <div className="rebalance-row cols-3" key={r.key}>
-                  <span>
+                  <span data-label="자산군">
                     <span className="tag" style={{ color: r.color, borderColor: r.color }}>{r.label}</span>
                   </span>
-                  <span className={`num ${r.deviation < -0.5 ? "pos" : r.deviation > 0.5 ? "neg" : "muted"}`}>
+                  <span data-label="괴리" className={`num ${r.deviation < -0.5 ? "pos" : r.deviation > 0.5 ? "neg" : "muted"}`}>
                     {r.deviation > 0 ? "+" : ""}{r.deviation.toFixed(1)}%p
                   </span>
-                  <span className="num strong">{r.suggested > 0 ? formatManwon(r.suggested) : "-"}</span>
+                  <span data-label="제안 투입액" className="num strong">{r.suggested > 0 ? formatManwon(r.suggested) : "-"}</span>
                 </div>
               ))}
             </div>

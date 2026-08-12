@@ -1,4 +1,5 @@
 import React from "react";
+import { PieChart as PieChartIcon, BarChart3, Activity, TrendingUp, Globe, PiggyBank } from "lucide-react";
 import {
   PieChart, Pie, Cell, Tooltip, ResponsiveContainer,
   AreaChart, Area, LineChart, Line, XAxis, YAxis, CartesianGrid,
@@ -64,7 +65,7 @@ export function AllocationDonut({ allocation, totalAssets, centerLabel = "총자
   if (allocation.length === 0) {
     return (
       <div className="empty-state">
-        <div className="empty-ring" />
+        <div className="empty-ring"><PieChartIcon size={20} /></div>
         <p>등록된 자산이 없어요.</p>
       </div>
     );
@@ -126,7 +127,7 @@ export function HoldingsBar({ assets }) {
   if (data.length === 0) {
     return (
       <div className="empty-state">
-        <div className="empty-ring" />
+        <div className="empty-ring"><BarChart3 size={20} /></div>
         <p>등록된 자산이 없어요.</p>
       </div>
     );
@@ -153,7 +154,7 @@ export function TrendArea({ data }) {
   if (data.length === 0) {
     return (
       <div className="empty-state">
-        <div className="empty-ring" />
+        <div className="empty-ring"><Activity size={20} /></div>
         <p>기록된 스냅샷이 없어요.</p>
       </div>
     );
@@ -203,7 +204,7 @@ export function YearlyGoalChart({ data }) {
   if (data.length === 0) {
     return (
       <div className="empty-state">
-        <div className="empty-ring" />
+        <div className="empty-ring"><BarChart3 size={20} /></div>
         <p>스냅샷 기록이 쌓이면 연도별 달성률이 표시돼요.</p>
       </div>
     );
@@ -227,7 +228,7 @@ export function CashflowChart({ data }) {
   if (data.length === 0) {
     return (
       <div className="empty-state">
-        <div className="empty-ring" />
+        <div className="empty-ring"><BarChart3 size={20} /></div>
         <p>월별 수입·지출 기록이 없어요.</p>
       </div>
     );
@@ -250,7 +251,7 @@ export function ExpenseBreakdown({ allocation }) {
   if (allocation.length === 0) {
     return (
       <div className="empty-state">
-        <div className="empty-ring" />
+        <div className="empty-ring"><PieChartIcon size={20} /></div>
         <p>이번 달 지출 항목이 없어요.</p>
       </div>
     );
@@ -313,7 +314,7 @@ export function CumulativeReturnChart({ data }) {
   if (data.length < 2) {
     return (
       <div className="empty-state">
-        <div className="empty-ring" />
+        <div className="empty-ring"><TrendingUp size={20} /></div>
         <p>스냅샷 2개 이상부터 누적 수익률을 볼 수 있어요.</p>
       </div>
     );
@@ -366,7 +367,7 @@ export function MarketIndexChart({ data }) {
   if (data.length === 0) {
     return (
       <div className="empty-state">
-        <div className="empty-ring" />
+        <div className="empty-ring"><Globe size={20} /></div>
         <p>아직 수집된 지수 데이터가 없어요. 자동 수집이 시작되면 여기 표시돼요.</p>
       </div>
     );
@@ -403,7 +404,7 @@ export function SavingsRateChart({ data }) {
   if (data.length === 0) {
     return (
       <div className="empty-state">
-        <div className="empty-ring" />
+        <div className="empty-ring"><PiggyBank size={20} /></div>
         <p>월별 수입·지출을 2개월 이상 기록하면 추이가 보여요.</p>
       </div>
     );

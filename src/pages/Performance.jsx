@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
+import { Percent, Calendar } from "lucide-react";
 import { useData } from "../context/DataContext";
 import { supabase } from "../lib/supabase";
 import { formatManwon, formatPct, computeAnnualReport } from "../lib/format";
 import { useFxRates } from "../lib/useFxRates";
 import { CumulativeReturnChart, MarketIndexChart } from "../components/charts";
+import PageSkeleton from "../components/PageSkeleton";
 
 export default function Performance() {
   const { assets, snapshots, loading } = useData();
@@ -61,7 +63,7 @@ export default function Performance() {
 
   const annualReport = computeAnnualReport(snapshots);
 
-  if (loading) return <div className="loading-screen">불러오는 중…</div>;
+  if (loading) return <PageSkeleton cards={3} />;
 
   return (
     <div className="page">
@@ -84,7 +86,7 @@ export default function Performance() {
         </div>
         {!hasContribData ? (
           <div className="empty-state">
-            <div className="empty-ring" />
+            <div className="empty-ring"><Percent size={20} /></div>
             <p>외화 자산에 수량·매수가·매도가·매수 시 환율을 모두 입력하면 계산돼요.</p>
           </div>
         ) : (
@@ -118,7 +120,7 @@ export default function Performance() {
         </div>
         {annualReport.length === 0 ? (
           <div className="empty-state">
-            <div className="empty-ring" />
+            <div className="empty-ring"><Calendar size={20} /></div>
             <p>연도별 스냅샷이 쌓이면 전년대비 증감이 표시돼요.</p>
           </div>
         ) : (
