@@ -272,6 +272,9 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
 .networth-value { font-family: 'IBM Plex Mono'; font-size: 20px; font-weight: 600; }
 .networth-value.strong { font-size: 26px; }
 .networth-op { font-family: 'IBM Plex Mono'; font-size: 20px; color: var(--ink-soft); margin-top: 14px; }
+
+.contrib-summary { display: flex; gap: 24px; flex-wrap: wrap; }
+.contrib-item { display: flex; flex-direction: column; gap: 4px; }
 .muted { color: var(--ink-soft); }
 .row-actions { display: flex; gap: 4px; justify-content: flex-end; }
 .tag { font-size: 11px; border: 1px solid; border-radius: 3px; padding: 2px 6px; white-space: nowrap; }

@@ -43,6 +43,17 @@ create table if not exists public.allocation_targets (
   unique (user_id, category)
 );
 
+-- 시장지수(S&P500/KOSPI) 일별 기록. 개인 데이터가 아니라 GitHub Actions가
+-- service_role 키로 매일 자동으로 채워넣습니다 (일반 로그인 사용자는 읽기만 가능).
+create table if not exists public.market_indices (
+  id uuid primary key default gen_random_uuid(),
+  date date not null,
+  symbol text not null,
+  value numeric not null,
+  created_at timestamptz not null default now(),
+  unique (date, symbol)
+);
+
 create table if not exists public.snapshots (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
@@ -96,6 +107,7 @@ create table if not exists public.cashflow_items (
 alter table public.assets enable row level security;
 alter table public.liabilities enable row level security;
 alter table public.allocation_targets enable row level security;
+alter table public.market_indices enable row level security;
 alter table public.snapshots enable row level security;
 alter table public.goals enable row level security;
 alter table public.cashflow enable row level security;
@@ -114,6 +126,12 @@ create policy "individual access" on public.liabilities
 drop policy if exists "individual access" on public.allocation_targets;
 create policy "individual access" on public.allocation_targets
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+-- market_indices는 개인 데이터가 아니라 시장 전체 데이터라 정책이 다릅니다:
+-- 로그인한 사용자는 누구나 읽을 수 있고, 쓰기는 service_role(=GitHub Actions)만 가능합니다.
+drop policy if exists "read only" on public.market_indices;
+create policy "read only" on public.market_indices
+  for select using (auth.role() = 'authenticated');
 
 drop policy if exists "individual access" on public.snapshots;
 create policy "individual access" on public.snapshots

@@ -1,0 +1,23 @@
+name: Fetch Market Indices
+
+on:
+  schedule:
+    # cron은 UTC 기준입니다. 22:00 UTC = 07:00 KST(다음날), 09:00 UTC = 18:00 KST
+    - cron: "0 22 * * *"
+    - cron: "0 9 * * *"
+  workflow_dispatch:
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - run: node scripts/fetch-market-indices.mjs
+        env:
+          SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}

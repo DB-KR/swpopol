@@ -1,10 +1,10 @@
 import React from "react";
 import {
   PieChart, Pie, Cell, Tooltip, ResponsiveContainer,
-  AreaChart, Area, XAxis, YAxis, CartesianGrid,
+  AreaChart, Area, LineChart, Line, XAxis, YAxis, CartesianGrid,
   BarChart, Bar,
 } from "recharts";
-import { formatManwon, formatMonthLabel } from "../lib/format";
+import { formatManwon, formatMonthLabel, formatPct } from "../lib/format";
 import { getCategory, getYearColor } from "../lib/constants";
 
 function PieTooltip({ active, payload }) {
@@ -293,5 +293,95 @@ export function ExpenseBreakdown({ allocation }) {
         ))}
       </div>
     </div>
+  );
+}
+
+function CumulativeReturnTooltip({ active, payload, label }) {
+  if (!active || !payload || !payload.length) return null;
+  return (
+    <div className="chart-tt">
+      <div className="chart-tt-label">{formatMonthLabel(label)}</div>
+      <div className="chart-tt-row">
+        <span>누적 수익률</span>
+        <span>{formatPct(payload[0].value)}</span>
+      </div>
+    </div>
+  );
+}
+
+export function CumulativeReturnChart({ data }) {
+  if (data.length < 2) {
+    return (
+      <div className="empty-state">
+        <div className="empty-ring" />
+        <p>스냅샷 2개 이상부터 누적 수익률을 볼 수 있어요.</p>
+      </div>
+    );
+  }
+  return (
+    <ResponsiveContainer width="100%" height={240}>
+      <AreaChart data={data} margin={{ top: 10, right: 16, left: 0, bottom: 0 }}>
+        <defs>
+          <linearGradient id="returnFill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#2F6F4E" stopOpacity={0.35} />
+            <stop offset="100%" stopColor="#2F6F4E" stopOpacity={0} />
+          </linearGradient>
+        </defs>
+        <CartesianGrid strokeDasharray="2 4" stroke="var(--line)" vertical={false} />
+        <XAxis dataKey="month" tickFormatter={formatMonthLabel} tick={{ fontFamily: "IBM Plex Mono", fontSize: 11, fill: "var(--ink-soft)" }} axisLine={{ stroke: "var(--line)" }} tickLine={false} />
+        <YAxis tickFormatter={(v) => `${v}%`} width={48} tick={{ fontFamily: "IBM Plex Mono", fontSize: 10, fill: "var(--ink-soft)" }} axisLine={false} tickLine={false} />
+        <Tooltip content={<CumulativeReturnTooltip />} />
+        <Area
+          type="monotone"
+          dataKey="cumPct"
+          stroke="var(--growth-green)"
+          strokeWidth={2.5}
+          fill="url(#returnFill)"
+          animationDuration={900}
+          animationEasing="ease-out"
+          dot={{ r: 3, fill: "var(--growth-green)" }}
+          activeDot={{ r: 6 }}
+        />
+      </AreaChart>
+    </ResponsiveContainer>
+  );
+}
+
+function MarketIndexTooltip({ active, payload, label }) {
+  if (!active || !payload || !payload.length) return null;
+  return (
+    <div className="chart-tt">
+      <div className="chart-tt-label">{label}</div>
+      {payload.map((p) => (
+        <div className="chart-tt-row" key={p.dataKey}>
+          <span>{p.dataKey}</span>
+          <span>{Number(p.value).toLocaleString("ko-KR", { maximumFractionDigits: 1 })}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export function MarketIndexChart({ data }) {
+  if (data.length === 0) {
+    return (
+      <div className="empty-state">
+        <div className="empty-ring" />
+        <p>아직 수집된 지수 데이터가 없어요. 자동 수집이 시작되면 여기 표시돼요.</p>
+      </div>
+    );
+  }
+  return (
+    <ResponsiveContainer width="100%" height={240}>
+      <LineChart data={data} margin={{ top: 10, right: 16, left: 0, bottom: 0 }}>
+        <CartesianGrid strokeDasharray="2 4" stroke="var(--line)" vertical={false} />
+        <XAxis dataKey="date" tick={{ fontFamily: "IBM Plex Mono", fontSize: 10, fill: "var(--ink-soft)" }} axisLine={{ stroke: "var(--line)" }} tickLine={false} />
+        <YAxis yAxisId="sp500" tick={{ fontFamily: "IBM Plex Mono", fontSize: 10, fill: "var(--stamp-red)" }} axisLine={false} tickLine={false} width={56} />
+        <YAxis yAxisId="kospi" orientation="right" tick={{ fontFamily: "IBM Plex Mono", fontSize: 10, fill: "var(--ink)" }} axisLine={false} tickLine={false} width={56} />
+        <Tooltip content={<MarketIndexTooltip />} />
+        <Line yAxisId="sp500" type="monotone" dataKey="SP500" stroke="var(--stamp-red)" strokeWidth={2} dot={false} animationDuration={700} />
+        <Line yAxisId="kospi" type="monotone" dataKey="KOSPI" stroke="var(--ink)" strokeWidth={2} dot={false} animationDuration={700} />
+      </LineChart>
+    </ResponsiveContainer>
   );
 }
