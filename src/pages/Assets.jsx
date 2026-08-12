@@ -93,7 +93,7 @@ export default function Assets() {
               const r = computeAssetReturns(a, fxRates);
               return (
                 <React.Fragment key={a.id}>
-                  <div className="ledger-row">
+                  <div className={`ledger-row${r ? " ledger-row-attached" : ""}`}>
                     <span className="reorder-btns">
                       <button className="reorder-btn" onClick={() => moveAsset(a.id, "up")} disabled={idx === 0} aria-label="위로 이동">
                         <ChevronUp size={13} />
@@ -155,18 +155,22 @@ export default function Assets() {
             <div className="ledger-row ledger-head">
               <span></span><span>구분</span><span>부채명</span><span>메모</span><span className="num">잔액</span><span></span>
             </div>
-            {liabilities.map((l, idx) =>
-              editingLiabilityId === l.id ? (
-                <div className="ledger-row-edit" key={l.id}>
-                  <LiabilityForm
-                    initial={l}
-                    onSubmit={async (f) => { await updateLiability(l.id, f); setEditingLiabilityId(null); }}
-                    onCancel={() => setEditingLiabilityId(null)}
-                  />
-                </div>
-              ) : (
+            {liabilities.map((l, idx) => {
+              if (editingLiabilityId === l.id) {
+                return (
+                  <div className="ledger-row-edit" key={l.id}>
+                    <LiabilityForm
+                      initial={l}
+                      onSubmit={async (f) => { await updateLiability(l.id, f); setEditingLiabilityId(null); }}
+                      onCancel={() => setEditingLiabilityId(null)}
+                    />
+                  </div>
+                );
+              }
+              const hasAmort = !!computeAmortization(l.amount, l.interest_rate, l.term_months);
+              return (
                 <React.Fragment key={l.id}>
-                  <div className="ledger-row">
+                  <div className={`ledger-row${hasAmort ? " ledger-row-attached" : ""}`}>
                     <span className="reorder-btns">
                       <button className="reorder-btn" onClick={() => moveLiability(l.id, "up")} disabled={idx === 0} aria-label="위로 이동">
                         <ChevronUp size={13} />
@@ -190,8 +194,8 @@ export default function Assets() {
                   </div>
                   <LiabilityAmortizationDetail liability={l} />
                 </React.Fragment>
-              )
-            )}
+              );
+            })}
           </div>
         )}
       </div>
