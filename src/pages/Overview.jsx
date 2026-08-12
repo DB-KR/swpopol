@@ -135,48 +135,50 @@ export default function Overview() {
   return (
     <div className="page">
       <header className="hero">
-        <div className="hero-top">
-          <div>
-            <span className="eyebrow">PERSONAL ASSET PASSBOOK</span>
-            <h1>개요</h1>
+        <div className="hero-grid">
+          <div className="hero-left">
+            <div>
+              <span className="eyebrow">PERSONAL ASSET PASSBOOK</span>
+              <h1>개요</h1>
+            </div>
+            <div className="hero-main">
+              <div className="hero-total">
+                <span className="hero-total-label">순자산</span>
+                <span className="hero-total-value">{formatManwon(animatedTotal)}</span>
+                <span className="hero-breakdown">자산 {formatManwon(totalAssets)} · 부채 {formatManwon(totalLiabilities)}</span>
+                {momChangePct !== null && (
+                  <span className={`hero-change ${momChangePct >= 0 ? "pos" : "neg"}`}>
+                    {momChangePct >= 0 ? <TrendingUp size={13} /> : <TrendingDown size={13} />} 자산 전월대비 {formatPct(momChangePct)}
+                  </span>
+                )}
+              </div>
+            </div>
+            <div className="hero-stats">
+              <div className="hero-stat">
+                <span className="hero-stat-label">목표까지</span>
+                <span className="hero-stat-value">{daysLeft === null ? "-" : daysLeft >= 0 ? `D-${daysLeft}` : `${Math.abs(daysLeft)}일 지남`}</span>
+              </div>
+              <div className="hero-stat">
+                <span className="hero-stat-label">올해 순자산 증가율</span>
+                <span className={`hero-stat-value ${thisYearYoyPct === null ? "" : thisYearYoyPct >= 0 ? "pos" : "neg"}`}>
+                  {thisYearYoyPct === null ? "-" : formatPct(thisYearYoyPct)}
+                </span>
+              </div>
+              <div className="hero-stat">
+                <span className="hero-stat-label">이번 달 순저축액</span>
+                <span className={`hero-stat-value ${monthlySavingsAmt === null ? "" : monthlySavingsAmt >= 0 ? "pos" : "neg"}`}>
+                  {monthlySavingsAmt === null ? "-" : `${monthlySavingsAmt >= 0 ? "+" : ""}${formatManwon(monthlySavingsAmt)}`}
+                </span>
+              </div>
+              <div className="hero-stat">
+                <span className="hero-stat-label">원/달러 환율</span>
+                <span className="hero-stat-value">{fxRates.USD ? `${fxRates.USD.toLocaleString("ko-KR", { maximumFractionDigits: 1 })}원` : "-"}</span>
+              </div>
+            </div>
           </div>
           <div className="hero-top-right">
             <span className="hero-clock">{clock.timeStr}</span>
             <MiniCalendar year={clock.year} month={clock.month} day={clock.day} />
-          </div>
-        </div>
-        <div className="hero-main">
-          <div className="hero-total">
-            <span className="hero-total-label">순자산</span>
-            <span className="hero-total-value">{formatManwon(animatedTotal)}</span>
-            <span className="hero-breakdown">자산 {formatManwon(totalAssets)} · 부채 {formatManwon(totalLiabilities)}</span>
-            {momChangePct !== null && (
-              <span className={`hero-change ${momChangePct >= 0 ? "pos" : "neg"}`}>
-                {momChangePct >= 0 ? <TrendingUp size={13} /> : <TrendingDown size={13} />} 자산 전월대비 {formatPct(momChangePct)}
-              </span>
-            )}
-          </div>
-        </div>
-        <div className="hero-stats">
-          <div className="hero-stat">
-            <span className="hero-stat-label">목표까지</span>
-            <span className="hero-stat-value">{daysLeft === null ? "-" : daysLeft >= 0 ? `D-${daysLeft}` : `${Math.abs(daysLeft)}일 지남`}</span>
-          </div>
-          <div className="hero-stat">
-            <span className="hero-stat-label">올해 순자산 증가율</span>
-            <span className={`hero-stat-value ${thisYearYoyPct === null ? "" : thisYearYoyPct >= 0 ? "pos" : "neg"}`}>
-              {thisYearYoyPct === null ? "-" : formatPct(thisYearYoyPct)}
-            </span>
-          </div>
-          <div className="hero-stat">
-            <span className="hero-stat-label">이번 달 순저축액</span>
-            <span className={`hero-stat-value ${monthlySavingsAmt === null ? "" : monthlySavingsAmt >= 0 ? "pos" : "neg"}`}>
-              {monthlySavingsAmt === null ? "-" : `${monthlySavingsAmt >= 0 ? "+" : ""}${formatManwon(monthlySavingsAmt)}`}
-            </span>
-          </div>
-          <div className="hero-stat">
-            <span className="hero-stat-label">원/달러 환율</span>
-            <span className="hero-stat-value">{fxRates.USD ? `${fxRates.USD.toLocaleString("ko-KR", { maximumFractionDigits: 1 })}원` : "-"}</span>
           </div>
         </div>
       </header>
