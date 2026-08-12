@@ -199,6 +199,15 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
   .rebalance-head { display: none; }
 }
 
+.holdings-table { display: flex; flex-direction: column; }
+.holdings-row { display: grid; grid-template-columns: 1.4fr 0.7fr 1fr 1fr 1.1fr 1fr; align-items: center; gap: 8px; padding: 10px 2px; border-bottom: 1px dashed var(--line); font-size: 13px; }
+.holdings-row .num { font-family: 'IBM Plex Mono'; text-align: right; display: inline-flex; align-items: center; justify-content: flex-end; gap: 4px; }
+.holdings-head { font-size: 11px; color: var(--ink-soft); border-bottom: 1px solid var(--line); padding-bottom: 8px; }
+@media (max-width: 760px) {
+  .holdings-row { grid-template-columns: 1fr 1fr; row-gap: 4px; }
+  .holdings-head { display: none; }
+}
+
 .snapshot-actions { display: flex; align-items: center; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
 
 /* Mini list */
