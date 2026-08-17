@@ -5,7 +5,8 @@ import { currentMonth } from "../lib/format";
 export function AssetForm({ initial, onSubmit, onCancel }) {
   const [category, setCategory] = useState(initial?.category || CATEGORIES[0].key);
   const [name, setName] = useState(initial?.name || "");
-  const [value, setValue] = useState(initial?.value ?? "");
+  // 화면 입력은 원 단위, DB 저장은 그대로 만원 단위 — 수정 모드로 열 때만 ×10000 해서 보여줍니다.
+  const [value, setValue] = useState(initial?.value != null ? initial.value * 10000 : "");
   const [memo, setMemo] = useState(initial?.memo || "");
   const [currency, setCurrency] = useState(initial?.currency || "KRW");
   const [buyPrice, setBuyPrice] = useState(initial?.buy_price ?? "");
@@ -23,7 +24,7 @@ export function AssetForm({ initial, onSubmit, onCancel }) {
     await onSubmit({
       category,
       name,
-      value,
+      value: Number(value) / 10000,
       memo,
       currency,
       buyPrice: showReturns ? buyPrice : "",
@@ -53,8 +54,8 @@ export function AssetForm({ initial, onSubmit, onCancel }) {
       </div>
       <div className="form-row">
         <label>
-          평가금액 (만원)
-          <input type="number" value={value} onChange={(e) => setValue(e.target.value)} placeholder="예: 1500" min="0" step="1" required />
+          평가금액 (원)
+          <input type="number" value={value} onChange={(e) => setValue(e.target.value)} placeholder="예: 15000000" min="0" step="1" required />
         </label>
         <label>
           메모 (선택)
@@ -121,7 +122,8 @@ export function AssetForm({ initial, onSubmit, onCancel }) {
 export function LiabilityForm({ initial, onSubmit, onCancel }) {
   const [category, setCategory] = useState(initial?.category || LIABILITY_CATEGORIES[0].key);
   const [name, setName] = useState(initial?.name || "");
-  const [amount, setAmount] = useState(initial?.amount ?? "");
+  // 화면 입력은 원 단위, DB 저장은 그대로 만원 단위 — 수정 모드로 열 때만 ×10000 해서 보여줍니다.
+  const [amount, setAmount] = useState(initial?.amount != null ? initial.amount * 10000 : "");
   const [interestRate, setInterestRate] = useState(initial?.interest_rate ?? "");
   const [termMonths, setTermMonths] = useState(initial?.term_months ?? "");
   const [memo, setMemo] = useState(initial?.memo || "");
@@ -131,7 +133,7 @@ export function LiabilityForm({ initial, onSubmit, onCancel }) {
     e.preventDefault();
     if (!name.trim() || amount === "") return;
     setSaving(true);
-    await onSubmit({ category, name, amount, interestRate, termMonths, memo });
+    await onSubmit({ category, name, amount: Number(amount) / 10000, interestRate, termMonths, memo });
     setSaving(false);
   }
 
@@ -153,8 +155,8 @@ export function LiabilityForm({ initial, onSubmit, onCancel }) {
       </div>
       <div className="form-row">
         <label>
-          잔액 (만원)
-          <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="예: 15000" min="0" required />
+          잔액 (원)
+          <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="예: 150000000" min="0" required />
         </label>
         <label>
           이자율 (%, 선택)
@@ -181,8 +183,9 @@ export function LiabilityForm({ initial, onSubmit, onCancel }) {
 
 export function GoalForm({ initial, onSubmit, onCancel }) {
   const [label, setLabel] = useState(initial?.label || "");
-  const [realEstateTarget, setRealEstateTarget] = useState(initial?.real_estate_target ?? "");
-  const [financialTarget, setFinancialTarget] = useState(initial?.financial_target ?? "");
+  // 화면 입력은 원 단위, DB 저장은 그대로 만원 단위 — 수정 모드로 열 때만 ×10000 해서 보여줍니다.
+  const [realEstateTarget, setRealEstateTarget] = useState(initial?.real_estate_target != null ? initial.real_estate_target * 10000 : "");
+  const [financialTarget, setFinancialTarget] = useState(initial?.financial_target != null ? initial.financial_target * 10000 : "");
   const [targetDate, setTargetDate] = useState(initial?.target_date || "");
   const [saving, setSaving] = useState(false);
 
@@ -190,7 +193,12 @@ export function GoalForm({ initial, onSubmit, onCancel }) {
     e.preventDefault();
     if ((realEstateTarget === "" && financialTarget === "") || !targetDate) return;
     setSaving(true);
-    await onSubmit({ label, realEstateTarget, financialTarget, targetDate });
+    await onSubmit({
+      label,
+      realEstateTarget: realEstateTarget === "" ? "" : Number(realEstateTarget) / 10000,
+      financialTarget: financialTarget === "" ? "" : Number(financialTarget) / 10000,
+      targetDate,
+    });
     setSaving(false);
   }
 
@@ -208,12 +216,12 @@ export function GoalForm({ initial, onSubmit, onCancel }) {
       </div>
       <div className="form-row">
         <label>
-          부동산 목표 금액 (만원)
-          <input type="number" value={realEstateTarget} onChange={(e) => setRealEstateTarget(e.target.value)} placeholder="예: 100000" min="0" />
+          부동산 목표 금액 (원)
+          <input type="number" value={realEstateTarget} onChange={(e) => setRealEstateTarget(e.target.value)} placeholder="예: 1000000000" min="0" />
         </label>
         <label>
-          금융자산 목표 금액 (만원)
-          <input type="number" value={financialTarget} onChange={(e) => setFinancialTarget(e.target.value)} placeholder="예: 100000" min="0" />
+          금융자산 목표 금액 (원)
+          <input type="number" value={financialTarget} onChange={(e) => setFinancialTarget(e.target.value)} placeholder="예: 1000000000" min="0" />
         </label>
       </div>
       <div className="form-actions">
@@ -230,7 +238,8 @@ export function CashflowItemForm({ initial, onSubmit, onCancel }) {
     initial?.category || (initial?.type === "income" ? INCOME_CATEGORIES[0].key : EXPENSE_CATEGORIES[0].key)
   );
   const [month, setMonth] = useState(initial?.month || currentMonth());
-  const [amount, setAmount] = useState(initial?.amount ?? "");
+  // 화면 입력은 원 단위, DB 저장은 그대로 만원 단위 — 수정 모드로 열 때만 ×10000 해서 보여줍니다.
+  const [amount, setAmount] = useState(initial?.amount != null ? initial.amount * 10000 : "");
   const [memo, setMemo] = useState(initial?.memo || "");
   const [isRecurring, setIsRecurring] = useState(initial?.is_recurring || false);
   const [saving, setSaving] = useState(false);
@@ -247,7 +256,7 @@ export function CashflowItemForm({ initial, onSubmit, onCancel }) {
     e.preventDefault();
     if (!month || amount === "") return;
     setSaving(true);
-    await onSubmit({ type, category, month, amount, memo, isRecurring });
+    await onSubmit({ type, category, month, amount: Number(amount) / 10000, memo, isRecurring });
     setSaving(false);
   }
 
@@ -276,8 +285,8 @@ export function CashflowItemForm({ initial, onSubmit, onCancel }) {
       </div>
       <div className="form-row">
         <label>
-          금액 (만원)
-          <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="예: 80" min="0" required />
+          금액 (원)
+          <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="예: 800000" min="0" required />
         </label>
         <label>
           메모 (선택)
@@ -300,17 +309,20 @@ export function CashflowItemForm({ initial, onSubmit, onCancel }) {
 
 export function SnapshotForm({ onSubmit, onCancel, defaultRealEstate, defaultFinancial }) {
   const [month, setMonth] = useState(currentMonth());
-  const [realEstate, setRealEstate] = useState(defaultRealEstate ?? "");
-  const [financial, setFinancial] = useState(defaultFinancial ?? "");
+  // 화면 입력은 원 단위, DB 저장은 그대로 만원 단위 — 기본값(현재 자산 합계, 만원)을 ×10000 해서 보여줍니다.
+  const [realEstate, setRealEstate] = useState(defaultRealEstate != null ? defaultRealEstate * 10000 : "");
+  const [financial, setFinancial] = useState(defaultFinancial != null ? defaultFinancial * 10000 : "");
   const [saving, setSaving] = useState(false);
 
-  const total = (Number(realEstate) || 0) + (Number(financial) || 0);
+  const realEstateManwon = realEstate === "" ? 0 : Number(realEstate) / 10000;
+  const financialManwon = financial === "" ? 0 : Number(financial) / 10000;
+  const total = realEstateManwon + financialManwon;
 
   async function submit(e) {
     e.preventDefault();
     if (!month || (realEstate === "" && financial === "")) return;
     setSaving(true);
-    await onSubmit(month, total, Number(realEstate) || 0, Number(financial) || 0);
+    await onSubmit(month, total, realEstateManwon, financialManwon);
     setSaving(false);
   }
 
@@ -322,15 +334,15 @@ export function SnapshotForm({ onSubmit, onCancel, defaultRealEstate, defaultFin
           <input type="month" value={month} onChange={(e) => setMonth(e.target.value)} min="1950-01" max="2100-12" required />
         </label>
         <label>
-          부동산 (만원)
+          부동산 (원)
           <input type="number" value={realEstate} onChange={(e) => setRealEstate(e.target.value)} min="0" />
         </label>
         <label>
-          금융자산 (만원)
+          금융자산 (원)
           <input type="number" value={financial} onChange={(e) => setFinancial(e.target.value)} min="0" />
         </label>
       </div>
-      <p className="form-hint">합계 {total.toLocaleString("ko-KR")}만원</p>
+      <p className="form-hint">합계 {Math.round(total).toLocaleString("ko-KR")}만원</p>
       <div className="form-actions">
         <button type="button" className="btn-ghost" onClick={onCancel}>취소</button>
         <button type="submit" className="btn-primary" disabled={saving}>기록 저장</button>

@@ -76,7 +76,8 @@ export default function Rebalance() {
     return { ...c, current, currentPct, targetPct, deviation: currentPct - targetPct };
   });
 
-  const contributionNum = Number(contribution) || 0;
+  // 화면 입력은 원 단위, 계산은 그대로 만원 단위(자산값과 같은 단위)로 맞춥니다.
+  const contributionNum = (Number(contribution) || 0) / 10000;
   const underweight = rows.map((r) => ({ ...r, weight: Math.max(0, r.targetPct - r.currentPct) }));
   const totalWeight = underweight.reduce((s, r) => s + r.weight, 0);
   const suggestions = underweight.map((r) => {
@@ -142,8 +143,8 @@ export default function Rebalance() {
           </div>
           <div className="form-row">
             <label style={{ maxWidth: 240 }}>
-              이번에 투입할 금액 (만원)
-              <input type="number" value={contribution} onChange={(e) => setContribution(e.target.value)} placeholder="예: 100" min="0" />
+              이번에 투입할 금액 (원)
+              <input type="number" value={contribution} onChange={(e) => setContribution(e.target.value)} placeholder="예: 1000000" min="0" />
             </label>
           </div>
 
