@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { CATEGORIES, INCOME_CATEGORIES, EXPENSE_CATEGORIES, CURRENCIES, LIABILITY_CATEGORIES, TICKER_MARKETS } from "../lib/constants";
+import { KR_STOCKS } from "../lib/krStocks";
 import { currentMonth, formatManwon } from "../lib/format";
 
 export function AssetForm({ initial, onSubmit, onCancel }) {
@@ -16,6 +17,18 @@ export function AssetForm({ initial, onSubmit, onCancel }) {
   const [quantity, setQuantity] = useState(initial?.quantity ?? "");
   const [ticker, setTicker] = useState(initial?.ticker || "");
   const [tickerMarket, setTickerMarket] = useState(initial?.ticker_market || "US");
+
+  // 국내 대형주는 이름으로 검색해서 고르면 종목코드·시장이 자동으로 채워집니다.
+  // 목록에 없는 종목은 그대로 코드를 직접 입력하면 돼요.
+  function handleTickerInput(v) {
+    const matched = KR_STOCKS.find((s) => `${s.code} ${s.name}` === v);
+    if (matched) {
+      setTicker(matched.code);
+      setTickerMarket(matched.market);
+    } else {
+      setTicker(v);
+    }
+  }
   const [showReturns, setShowReturns] = useState(!!(initial?.buy_price || initial?.sell_price));
   const [saving, setSaving] = useState(false);
 
@@ -112,7 +125,18 @@ export function AssetForm({ initial, onSubmit, onCancel }) {
           <div className="form-row">
             <label>
               티커 (선택, 자동 시세 갱신용)
-              <input type="text" value={ticker} onChange={(e) => setTicker(e.target.value)} placeholder="예: QQQM, 005930" />
+              <input
+                type="text"
+                list="kr-stock-list"
+                value={ticker}
+                onChange={(e) => handleTickerInput(e.target.value)}
+                placeholder="예: QQQM, 005930, 또는 삼성전자 검색"
+              />
+              <datalist id="kr-stock-list">
+                {KR_STOCKS.map((s) => (
+                  <option key={s.code} value={`${s.code} ${s.name}`} />
+                ))}
+              </datalist>
             </label>
             <label>
               시장
