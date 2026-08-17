@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { HashRouter, Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { Menu } from "lucide-react";
@@ -75,6 +75,40 @@ function Shell({ theme, toggleTheme }) {
     });
   }
 
+  // 모바일에서 화면 왼쪽 가장자리를 오른쪽으로 스와이프하면 메뉴가 열리도록 합니다.
+  // 데스크톱(860px 초과)에서는 사이드바가 항상 보이므로 굳이 추적하지 않습니다.
+  const touchStart = useRef(null);
+  const EDGE_ZONE_PX = 24;
+  const SWIPE_THRESHOLD_PX = 60;
+
+  function handleTouchStart(e) {
+    if (sidebarOpen || window.innerWidth > 860) {
+      touchStart.current = null;
+      return;
+    }
+    const t = e.touches[0];
+    if (t.clientX > EDGE_ZONE_PX) return;
+    touchStart.current = { x: t.clientX, y: t.clientY };
+  }
+
+  function handleTouchMove(e) {
+    if (!touchStart.current) return;
+    const t = e.touches[0];
+    const dx = t.clientX - touchStart.current.x;
+    const dy = t.clientY - touchStart.current.y;
+    if (dx > SWIPE_THRESHOLD_PX && Math.abs(dx) > Math.abs(dy) * 1.5) {
+      setSidebarOpen(true);
+      touchStart.current = null;
+    } else if (Math.abs(dy) > 40) {
+      // 세로 스크롤로 보이면 스와이프 추적을 그만둡니다.
+      touchStart.current = null;
+    }
+  }
+
+  function handleTouchEnd() {
+    touchStart.current = null;
+  }
+
   if (session === undefined) {
     return <div className="loading-screen">불러오는 중…</div>;
   }
@@ -85,7 +119,12 @@ function Shell({ theme, toggleTheme }) {
 
   return (
     <DataProvider>
-      <div className={`shell ${collapsed ? "collapsed" : ""}`}>
+      <div
+        className={`shell ${collapsed ? "collapsed" : ""}`}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
         <Sidebar
           open={sidebarOpen}
           onClose={() => setSidebarOpen(false)}
