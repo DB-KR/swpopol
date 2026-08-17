@@ -413,6 +413,59 @@ export function MarketIndexChart({ data }) {
   );
 }
 
+function BenchmarkCompareTooltip({ active, payload, label }) {
+  if (!active || !payload || !payload.length) return null;
+  return (
+    <div className="chart-tt">
+      <div className="chart-tt-label">{formatMonthLabel(label)}</div>
+      {payload.map((p) => (
+        <div className="chart-tt-row" key={p.dataKey}>
+          <span>{p.name}</span>
+          <span>{formatPct(p.value)}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// 내 자산 스냅샷(월별)과 지수(월말값)를 같은 시작월 기준 등락률(%)로 정규화해서 비교합니다.
+// indexLabel/indexColor로 S&P500·KOSPI 카드에 재사용합니다.
+export function BenchmarkCompareChart({ data, indexLabel, indexColor }) {
+  if (data.length === 0) {
+    return (
+      <div className="empty-state">
+        <div className="empty-ring"><Globe size={20} /></div>
+        <p>비교할 스냅샷·지수 데이터가 아직 부족해요.</p>
+      </div>
+    );
+  }
+  return (
+    <>
+      <div className="gauge-legend" style={{ marginBottom: 8 }}>
+        <span className="gauge-legend-item">
+          <span className="gauge-legend-dot" style={{ background: "var(--accent)" }} />
+          내 자산
+        </span>
+        <span className="gauge-legend-item">
+          <span className="gauge-legend-dot" style={{ background: indexColor }} />
+          {indexLabel}
+        </span>
+      </div>
+      <ResponsiveContainer width="100%" height={220}>
+        <LineChart data={data} margin={{ top: 10, right: 16, left: 0, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="2 4" stroke="var(--line)" vertical={false} />
+          <XAxis dataKey="month" tickFormatter={formatMonthLabel} tick={{ fontFamily: "IBM Plex Mono", fontSize: 10, fill: "var(--ink-soft)" }} axisLine={{ stroke: "var(--line)" }} tickLine={false} />
+          <YAxis tickFormatter={(v) => formatPct(v, 0)} tick={{ fontFamily: "IBM Plex Mono", fontSize: 10, fill: "var(--ink-soft)" }} axisLine={false} tickLine={false} width={48} />
+          <ReferenceLine y={0} stroke="var(--line)" />
+          <Tooltip content={<BenchmarkCompareTooltip />} />
+          <Line type="monotone" dataKey="portfolioPct" name="내 자산" stroke="var(--accent)" strokeWidth={2.5} dot={{ r: 3, fill: "var(--accent)" }} activeDot={{ r: 6 }} animationDuration={700} />
+          <Line type="monotone" dataKey="indexPct" name={indexLabel} stroke={indexColor} strokeWidth={2} dot={false} connectNulls animationDuration={700} />
+        </LineChart>
+      </ResponsiveContainer>
+    </>
+  );
+}
+
 function SavingsRateTooltip({ active, payload, label }) {
   if (!active || !payload || !payload.length) return null;
   return (

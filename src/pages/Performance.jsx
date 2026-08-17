@@ -4,7 +4,7 @@ import { useData } from "../context/DataContext";
 import { supabase } from "../lib/supabase";
 import { formatManwon, formatPct, computeAnnualReport } from "../lib/format";
 import { useFxRates } from "../lib/useFxRates";
-import { CumulativeReturnChart, MarketIndexChart } from "../components/charts";
+import { CumulativeReturnChart, MarketIndexChart, BenchmarkCompareChart } from "../components/charts";
 import PageSkeleton from "../components/PageSkeleton";
 
 export default function Performance() {
@@ -19,7 +19,7 @@ export default function Performance() {
         .from("market_indices")
         .select("*")
         .order("date", { ascending: true })
-        .limit(400);
+        .limit(4000);
       setIndices(data || []);
       setIndicesLoading(false);
     })();
@@ -61,6 +61,30 @@ export default function Performance() {
   const latestSP500 = [...indices].reverse().find((r) => r.symbol === "SP500");
   const latestKOSPI = [...indices].reverse().find((r) => r.symbol === "KOSPI");
 
+  // 지수를 "그 달의 최신값"으로 월별 집계 (indices가 date 오름차순이라 덮어쓰면 마지막 값이 남음)
+  const monthlyIndexBySymbol = {};
+  indices.forEach((row) => {
+    const month = row.date.slice(0, 7);
+    if (!monthlyIndexBySymbol[row.symbol]) monthlyIndexBySymbol[row.symbol] = {};
+    monthlyIndexBySymbol[row.symbol][month] = Number(row.value);
+  });
+
+  // 내 자산 스냅샷과 지수(월별)를 같은 시작월 기준 등락률(%)로 정규화해서 비교합니다.
+  // 지수 데이터가 있는 첫 스냅샷 달을 0%로 놓고, 그 이후 스냅샷만 사용합니다.
+  function buildBenchmarkCompareData(monthlyIndex) {
+    const withIndex = sortedSnapshots.filter((s) => monthlyIndex && monthlyIndex[s.month] != null);
+    if (withIndex.length === 0) return [];
+    const baseTotal = withIndex[0].total;
+    const baseIndex = monthlyIndex[withIndex[0].month];
+    return withIndex.map((s) => ({
+      month: s.month,
+      portfolioPct: baseTotal ? ((s.total - baseTotal) / baseTotal) * 100 : 0,
+      indexPct: ((monthlyIndex[s.month] - baseIndex) / baseIndex) * 100,
+    }));
+  }
+  const sp500CompareData = buildBenchmarkCompareData(monthlyIndexBySymbol.SP500);
+  const kospiCompareData = buildBenchmarkCompareData(monthlyIndexBySymbol.KOSPI);
+
   const annualReport = computeAnnualReport(snapshots);
 
   if (loading) return <PageSkeleton cards={3} />;
@@ -77,6 +101,31 @@ export default function Performance() {
           )}
         </div>
         <CumulativeReturnChart data={cumData} />
+      </div>
+
+      <div className="grid-2">
+        <div className="card">
+          <div className="card-head">
+            <h2>S&P500 vs 내 자산</h2>
+            <span className="card-sub">월별 등락률 비교</span>
+          </div>
+          {indicesLoading ? (
+            <div className="empty-state"><div className="empty-ring" /><p>불러오는 중…</p></div>
+          ) : (
+            <BenchmarkCompareChart data={sp500CompareData} indexLabel="S&P500" indexColor="var(--stamp-red)" />
+          )}
+        </div>
+        <div className="card">
+          <div className="card-head">
+            <h2>KOSPI vs 내 자산</h2>
+            <span className="card-sub">월별 등락률 비교</span>
+          </div>
+          {indicesLoading ? (
+            <div className="empty-state"><div className="empty-ring" /><p>불러오는 중…</p></div>
+          ) : (
+            <BenchmarkCompareChart data={kospiCompareData} indexLabel="KOSPI" indexColor="var(--ink)" />
+          )}
+        </div>
       </div>
 
       <div className="card">
