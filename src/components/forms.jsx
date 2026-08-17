@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { CATEGORIES, INCOME_CATEGORIES, EXPENSE_CATEGORIES, CURRENCIES, LIABILITY_CATEGORIES, TICKER_MARKETS } from "../lib/constants";
-import { KR_STOCKS } from "../lib/krStocks";
 import { currentMonth, formatManwon } from "../lib/format";
 
 // 금액 입력창에 3자리마다 콤마를 찍어 보여주는 텍스트 입력입니다.
@@ -48,18 +47,6 @@ export function AssetForm({ initial, onSubmit, onCancel }) {
   const [quantity, setQuantity] = useState(initial?.quantity ?? "");
   const [ticker, setTicker] = useState(initial?.ticker || "");
   const [tickerMarket, setTickerMarket] = useState(initial?.ticker_market || "US");
-
-  // 국내 대형주는 이름으로 검색해서 고르면 종목코드·시장이 자동으로 채워집니다.
-  // 목록에 없는 종목은 그대로 코드를 직접 입력하면 돼요.
-  function handleTickerInput(v) {
-    const matched = KR_STOCKS.find((s) => `${s.code} ${s.name}` === v);
-    if (matched) {
-      setTicker(matched.code);
-      setTickerMarket(matched.market);
-    } else {
-      setTicker(v);
-    }
-  }
   const [showReturns, setShowReturns] = useState(!!(initial?.buy_price || initial?.sell_price));
   const [saving, setSaving] = useState(false);
 
@@ -145,29 +132,15 @@ export function AssetForm({ initial, onSubmit, onCancel }) {
               <MoneyInput value={sellPrice} onChange={setSellPrice} placeholder="예: 182.40" allowDecimal />
             </label>
           </div>
-          {currency !== "KRW" && (
-            <div className="form-row">
-              <label>
-                평균환율 (매수 시점, 1{currency}당 원화)
-                <input type="number" value={buyFxRate} onChange={(e) => setBuyFxRate(e.target.value)} placeholder="예: 1320.50" min="0" step="0.01" />
-              </label>
-            </div>
-          )}
           <div className="form-row">
             <label>
               티커 (선택, 자동 시세 갱신용)
               <input
                 type="text"
-                list="kr-stock-list"
                 value={ticker}
-                onChange={(e) => handleTickerInput(e.target.value)}
-                placeholder="예: QQQM, 005930, 또는 삼성전자 검색"
+                onChange={(e) => setTicker(e.target.value)}
+                placeholder="예: QQQM, 005930"
               />
-              <datalist id="kr-stock-list">
-                {KR_STOCKS.map((s) => (
-                  <option key={s.code} value={`${s.code} ${s.name}`} />
-                ))}
-              </datalist>
             </label>
             <label>
               시장
@@ -178,6 +151,14 @@ export function AssetForm({ initial, onSubmit, onCancel }) {
               </select>
             </label>
           </div>
+          {tickerMarket === "US" && currency !== "KRW" && (
+            <div className="form-row">
+              <label>
+                평균환율 (매수 시점, 1{currency}당 원화)
+                <input type="number" value={buyFxRate} onChange={(e) => setBuyFxRate(e.target.value)} placeholder="예: 1320.50" min="0" step="0.01" />
+              </label>
+            </div>
+          )}
           {ticker.trim() && (
             <p className="form-hint">매일 자동으로 현재가·평가금액이 갱신돼요. (코스피/코스닥은 종목코드만 입력, 접미사는 자동으로 붙어요)</p>
           )}
