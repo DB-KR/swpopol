@@ -78,7 +78,7 @@ function Shell({ theme, toggleTheme }) {
   // 모바일에서 화면 왼쪽 가장자리를 오른쪽으로 스와이프하면 메뉴가 열리도록 합니다.
   // 데스크톱(860px 초과)에서는 사이드바가 항상 보이므로 굳이 추적하지 않습니다.
   const touchStart = useRef(null);
-  const EDGE_ZONE_PX = 24;
+  const EDGE_ZONE_PX = 50;
   const SWIPE_THRESHOLD_PX = 60;
 
   function handleTouchStart(e) {
