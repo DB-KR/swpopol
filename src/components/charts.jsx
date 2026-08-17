@@ -2,7 +2,7 @@ import React from "react";
 import { PieChart as PieChartIcon, BarChart3, Activity, TrendingUp, Globe, PiggyBank } from "lucide-react";
 import {
   PieChart, Pie, Cell, Tooltip, ResponsiveContainer,
-  AreaChart, Area, LineChart, Line, XAxis, YAxis, CartesianGrid,
+  AreaChart, Area, LineChart, Line, XAxis, YAxis, CartesianGrid, ReferenceLine,
   BarChart, Bar,
 } from "recharts";
 import { formatManwon, formatMonthLabel, formatPct } from "../lib/format";
@@ -356,11 +356,23 @@ function MarketIndexTooltip({ active, payload, label }) {
       {payload.map((p) => (
         <div className="chart-tt-row" key={p.dataKey}>
           <span>{p.dataKey}</span>
-          <span>{Number(p.value).toLocaleString("ko-KR", { maximumFractionDigits: 1 })}</span>
+          <span>{formatPct(p.value)}</span>
         </div>
       ))}
     </div>
   );
+}
+
+// 서로 단위가 다른 지수(S&P500 포인트, KOSPI 포인트)를 절대값으로 비교하면 의미가 없어서,
+// 구간 첫날 대비 등락률(%)로 정규화해 하나의 축에서 상대 성과를 비교할 수 있게 합니다.
+function normalizeIndexSeries(data) {
+  const firstSP500 = data.find((d) => d.SP500 != null)?.SP500;
+  const firstKOSPI = data.find((d) => d.KOSPI != null)?.KOSPI;
+  return data.map((d) => ({
+    date: d.date,
+    SP500: d.SP500 != null && firstSP500 ? ((d.SP500 - firstSP500) / firstSP500) * 100 : null,
+    KOSPI: d.KOSPI != null && firstKOSPI ? ((d.KOSPI - firstKOSPI) / firstKOSPI) * 100 : null,
+  }));
 }
 
 export function MarketIndexChart({ data }) {
@@ -372,18 +384,32 @@ export function MarketIndexChart({ data }) {
       </div>
     );
   }
+  const normalized = normalizeIndexSeries(data);
   return (
-    <ResponsiveContainer width="100%" height={240}>
-      <LineChart data={data} margin={{ top: 10, right: 16, left: 0, bottom: 0 }}>
-        <CartesianGrid strokeDasharray="2 4" stroke="var(--line)" vertical={false} />
-        <XAxis dataKey="date" tick={{ fontFamily: "IBM Plex Mono", fontSize: 10, fill: "var(--ink-soft)" }} axisLine={{ stroke: "var(--line)" }} tickLine={false} />
-        <YAxis yAxisId="sp500" tick={{ fontFamily: "IBM Plex Mono", fontSize: 10, fill: "var(--stamp-red)" }} axisLine={false} tickLine={false} width={56} />
-        <YAxis yAxisId="kospi" orientation="right" tick={{ fontFamily: "IBM Plex Mono", fontSize: 10, fill: "var(--ink)" }} axisLine={false} tickLine={false} width={56} />
-        <Tooltip content={<MarketIndexTooltip />} />
-        <Line yAxisId="sp500" type="monotone" dataKey="SP500" stroke="var(--stamp-red)" strokeWidth={2} dot={false} animationDuration={700} />
-        <Line yAxisId="kospi" type="monotone" dataKey="KOSPI" stroke="var(--ink)" strokeWidth={2} dot={false} animationDuration={700} />
-      </LineChart>
-    </ResponsiveContainer>
+    <>
+      <div className="gauge-legend" style={{ marginBottom: 8 }}>
+        <span className="gauge-legend-item">
+          <span className="gauge-legend-dot" style={{ background: "var(--stamp-red)" }} />
+          S&P500
+        </span>
+        <span className="gauge-legend-item">
+          <span className="gauge-legend-dot" style={{ background: "var(--ink)" }} />
+          KOSPI
+        </span>
+        <span className="gauge-legend-item muted">첫날(구간 시작일) 대비 등락률</span>
+      </div>
+      <ResponsiveContainer width="100%" height={240}>
+        <LineChart data={normalized} margin={{ top: 10, right: 16, left: 0, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="2 4" stroke="var(--line)" vertical={false} />
+          <XAxis dataKey="date" tick={{ fontFamily: "IBM Plex Mono", fontSize: 10, fill: "var(--ink-soft)" }} axisLine={{ stroke: "var(--line)" }} tickLine={false} />
+          <YAxis tickFormatter={(v) => formatPct(v, 0)} tick={{ fontFamily: "IBM Plex Mono", fontSize: 10, fill: "var(--ink-soft)" }} axisLine={false} tickLine={false} width={48} />
+          <ReferenceLine y={0} stroke="var(--line)" />
+          <Tooltip content={<MarketIndexTooltip />} />
+          <Line type="monotone" dataKey="SP500" stroke="var(--stamp-red)" strokeWidth={2} dot={false} connectNulls animationDuration={700} />
+          <Line type="monotone" dataKey="KOSPI" stroke="var(--ink)" strokeWidth={2} dot={false} connectNulls animationDuration={700} />
+        </LineChart>
+      </ResponsiveContainer>
+    </>
   );
 }
 
