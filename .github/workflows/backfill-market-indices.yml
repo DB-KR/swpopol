@@ -1,0 +1,23 @@
+name: Backfill Market Indices
+
+# 1회성 수동 실행 전용입니다. 스케줄 없이 workflow_dispatch로만 트리거되며,
+# S&P500 · KOSPI의 최근 5년치 일별 종가를 한 번에 받아와 market_indices 테이블을 채웁니다.
+# 실행: GitHub 저장소 Actions 탭 → "Backfill Market Indices" → Run workflow 버튼.
+# 이후 매일 값을 추가하는 건 fetch-market-indices.yml(크론잡)이 계속 담당합니다.
+on:
+  workflow_dispatch:
+
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - run: node scripts/backfill-market-indices.mjs
+        env:
+          SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
