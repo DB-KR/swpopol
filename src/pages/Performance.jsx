@@ -15,12 +15,16 @@ export default function Performance() {
   useEffect(() => {
     (async () => {
       setIndicesLoading(true);
+      // Supabase 프로젝트의 API "Max Rows" 설정이 응답 건수를 강제로 제한할 수 있어서
+      // (기본값 1000 등), 오래된 순으로 가져오면 최신 데이터가 잘려나갈 수 있습니다.
+      // 최신순(내림차순)으로 가져온 뒤 화면에서 다시 오래된 순으로 뒤집어서,
+      // 응답이 잘리더라도 최근 데이터가 우선 보이도록 합니다.
       const { data } = await supabase
         .from("market_indices")
         .select("*")
-        .order("date", { ascending: true })
+        .order("date", { ascending: false })
         .limit(4000);
-      setIndices(data || []);
+      setIndices((data || []).slice().reverse());
       setIndicesLoading(false);
     })();
   }, []);
