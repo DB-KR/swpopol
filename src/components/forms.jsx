@@ -3,6 +3,37 @@ import { CATEGORIES, INCOME_CATEGORIES, EXPENSE_CATEGORIES, CURRENCIES, LIABILIT
 import { KR_STOCKS } from "../lib/krStocks";
 import { currentMonth, formatManwon } from "../lib/format";
 
+// 금액 입력창에 3자리마다 콤마를 찍어 보여주는 텍스트 입력입니다.
+// 실제 값(state)은 콤마 없는 순수 숫자 문자열로 유지하고, 화면에 보여줄 때만 포맷합니다.
+export function MoneyInput({ value, onChange, placeholder, allowDecimal = false, required }) {
+  function handleChange(e) {
+    let raw = e.target.value.replace(/,/g, "");
+    if (allowDecimal) {
+      raw = raw.replace(/[^0-9.]/g, "");
+      const firstDot = raw.indexOf(".");
+      if (firstDot !== -1) {
+        raw = raw.slice(0, firstDot + 1) + raw.slice(firstDot + 1).replace(/\./g, "");
+      }
+    } else {
+      raw = raw.replace(/[^0-9]/g, "");
+    }
+    onChange(raw);
+  }
+
+  let display = "";
+  if (value !== "" && value !== null && value !== undefined) {
+    const str = String(value);
+    const dotIdx = str.indexOf(".");
+    const intPart = dotIdx === -1 ? str : str.slice(0, dotIdx);
+    const decPart = dotIdx === -1 ? "" : str.slice(dotIdx);
+    display = (intPart === "" ? "" : Number(intPart).toLocaleString("ko-KR")) + decPart;
+  }
+
+  return (
+    <input type="text" inputMode="decimal" value={display} onChange={handleChange} placeholder={placeholder} required={required} />
+  );
+}
+
 export function AssetForm({ initial, onSubmit, onCancel }) {
   const [category, setCategory] = useState(initial?.category || CATEGORIES[0].key);
   const [name, setName] = useState(initial?.name || "");
@@ -72,7 +103,7 @@ export function AssetForm({ initial, onSubmit, onCancel }) {
       <div className="form-row">
         <label>
           평가금액 (원)
-          <input type="number" value={value} onChange={(e) => setValue(e.target.value)} placeholder="예: 15000000" min="0" step="1" required />
+          <MoneyInput value={value} onChange={setValue} placeholder="예: 15000000" required />
         </label>
         <label>
           메모 (선택)
@@ -107,11 +138,11 @@ export function AssetForm({ initial, onSubmit, onCancel }) {
             </label>
             <label>
               매수가 (1주/1좌 기준, {currency})
-              <input type="number" value={buyPrice} onChange={(e) => setBuyPrice(e.target.value)} placeholder="예: 150.25" min="0" step="0.01" />
+              <MoneyInput value={buyPrice} onChange={setBuyPrice} placeholder="예: 150.25" allowDecimal />
             </label>
             <label>
               매도가(현재가, {currency})
-              <input type="number" value={sellPrice} onChange={(e) => setSellPrice(e.target.value)} placeholder="예: 182.40" min="0" step="0.01" />
+              <MoneyInput value={sellPrice} onChange={setSellPrice} placeholder="예: 182.40" allowDecimal />
             </label>
           </div>
           {currency !== "KRW" && (
@@ -201,7 +232,7 @@ export function LiabilityForm({ initial, onSubmit, onCancel }) {
       <div className="form-row">
         <label>
           잔액 (원)
-          <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="예: 150000000" min="0" required />
+          <MoneyInput value={amount} onChange={setAmount} placeholder="예: 150000000" required />
         </label>
         <label>
           이자율 (%, 선택)
@@ -262,11 +293,11 @@ export function GoalForm({ initial, onSubmit, onCancel }) {
       <div className="form-row">
         <label>
           부동산 목표 금액 (원)
-          <input type="number" value={realEstateTarget} onChange={(e) => setRealEstateTarget(e.target.value)} placeholder="예: 1000000000" min="0" />
+          <MoneyInput value={realEstateTarget} onChange={setRealEstateTarget} placeholder="예: 1000000000" />
         </label>
         <label>
           금융자산 목표 금액 (원)
-          <input type="number" value={financialTarget} onChange={(e) => setFinancialTarget(e.target.value)} placeholder="예: 1000000000" min="0" />
+          <MoneyInput value={financialTarget} onChange={setFinancialTarget} placeholder="예: 1000000000" />
         </label>
       </div>
       <div className="form-actions">
@@ -331,7 +362,7 @@ export function CashflowItemForm({ initial, onSubmit, onCancel }) {
       <div className="form-row">
         <label>
           금액 (원)
-          <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="예: 800000" min="0" required />
+          <MoneyInput value={amount} onChange={setAmount} placeholder="예: 800000" required />
         </label>
         <label>
           메모 (선택)
@@ -380,11 +411,11 @@ export function SnapshotForm({ onSubmit, onCancel, defaultRealEstate, defaultFin
         </label>
         <label>
           부동산 (원)
-          <input type="number" value={realEstate} onChange={(e) => setRealEstate(e.target.value)} min="0" />
+          <MoneyInput value={realEstate} onChange={setRealEstate} />
         </label>
         <label>
           금융자산 (원)
-          <input type="number" value={financial} onChange={(e) => setFinancial(e.target.value)} min="0" />
+          <MoneyInput value={financial} onChange={setFinancial} />
         </label>
       </div>
       <p className="form-hint">합계 {formatManwon(total)}</p>

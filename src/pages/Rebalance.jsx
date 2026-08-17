@@ -3,6 +3,7 @@ import { Pencil, Scale } from "lucide-react";
 import { useData } from "../context/DataContext";
 import { CATEGORIES } from "../lib/constants";
 import { formatManwon } from "../lib/format";
+import { MoneyInput } from "../components/forms";
 import PageSkeleton from "../components/PageSkeleton";
 
 // 부동산은 조금씩 사고팔 수 있는 자산이 아니라서 리밸런싱 대상에서 제외합니다.
@@ -144,7 +145,7 @@ export default function Rebalance() {
           <div className="form-row">
             <label style={{ maxWidth: 240 }}>
               이번에 투입할 금액 (원)
-              <input type="number" value={contribution} onChange={(e) => setContribution(e.target.value)} placeholder="예: 1000000" min="0" />
+              <MoneyInput value={contribution} onChange={setContribution} placeholder="예: 1000000" />
             </label>
           </div>
 
