@@ -64,6 +64,8 @@ export function DataProvider({ children }) {
       buy_fx_rate: form.buyFxRate === "" || form.buyFxRate === undefined ? null : Number(form.buyFxRate),
       buy_date: form.buyDate === "" || form.buyDate === undefined ? null : form.buyDate,
       quantity: form.quantity === "" || form.quantity === undefined ? null : Number(form.quantity),
+      ticker: form.ticker === "" || form.ticker === undefined ? null : form.ticker,
+      ticker_market: form.tickerMarket || "US",
       sort_order: assets.length,
     });
     if (err) { setError(`자산 추가에 실패했어요. (${err.message})`); return; }
@@ -84,6 +86,8 @@ export function DataProvider({ children }) {
         buy_fx_rate: form.buyFxRate === "" || form.buyFxRate === undefined ? null : Number(form.buyFxRate),
         buy_date: form.buyDate === "" || form.buyDate === undefined ? null : form.buyDate,
         quantity: form.quantity === "" || form.quantity === undefined ? null : Number(form.quantity),
+        ticker: form.ticker === "" || form.ticker === undefined ? null : form.ticker,
+        ticker_market: form.tickerMarket || "US",
       })
       .eq("id", id);
     if (err) { setError(`자산 수정에 실패했어요. (${err.message})`); return; }

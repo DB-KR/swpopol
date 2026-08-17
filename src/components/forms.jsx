@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { CATEGORIES, INCOME_CATEGORIES, EXPENSE_CATEGORIES, CURRENCIES, LIABILITY_CATEGORIES } from "../lib/constants";
+import { CATEGORIES, INCOME_CATEGORIES, EXPENSE_CATEGORIES, CURRENCIES, LIABILITY_CATEGORIES, TICKER_MARKETS } from "../lib/constants";
 import { currentMonth, formatManwon } from "../lib/format";
 
 export function AssetForm({ initial, onSubmit, onCancel }) {
@@ -14,6 +14,8 @@ export function AssetForm({ initial, onSubmit, onCancel }) {
   const [buyFxRate, setBuyFxRate] = useState(initial?.buy_fx_rate ?? "");
   const [buyDate, setBuyDate] = useState(initial?.buy_date || "");
   const [quantity, setQuantity] = useState(initial?.quantity ?? "");
+  const [ticker, setTicker] = useState(initial?.ticker || "");
+  const [tickerMarket, setTickerMarket] = useState(initial?.ticker_market || "US");
   const [showReturns, setShowReturns] = useState(!!(initial?.buy_price || initial?.sell_price));
   const [saving, setSaving] = useState(false);
 
@@ -32,6 +34,8 @@ export function AssetForm({ initial, onSubmit, onCancel }) {
       buyFxRate: showReturns && currency !== "KRW" ? buyFxRate : "",
       buyDate: showReturns ? buyDate : "",
       quantity: showReturns ? quantity : "",
+      ticker: showReturns ? ticker.trim().toUpperCase() : "",
+      tickerMarket,
     });
     setSaving(false);
   }
@@ -104,6 +108,23 @@ export function AssetForm({ initial, onSubmit, onCancel }) {
                 <input type="number" value={buyFxRate} onChange={(e) => setBuyFxRate(e.target.value)} placeholder="예: 1320.50" min="0" step="0.01" />
               </label>
             </div>
+          )}
+          <div className="form-row">
+            <label>
+              티커 (선택, 자동 시세 갱신용)
+              <input type="text" value={ticker} onChange={(e) => setTicker(e.target.value)} placeholder="예: QQQM, 005930" />
+            </label>
+            <label>
+              시장
+              <select value={tickerMarket} onChange={(e) => setTickerMarket(e.target.value)}>
+                {TICKER_MARKETS.map((m) => (
+                  <option key={m.key} value={m.key}>{m.label}</option>
+                ))}
+              </select>
+            </label>
+          </div>
+          {ticker.trim() && (
+            <p className="form-hint">매일 자동으로 현재가·평가금액이 갱신돼요. (코스피/코스닥은 종목코드만 입력, 접미사는 자동으로 붙어요)</p>
           )}
           <button type="button" className="link-btn" onClick={() => setShowReturns(false)}>
             매수가·매도가 기록 안 함

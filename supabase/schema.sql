@@ -22,6 +22,10 @@ alter table public.assets add column if not exists buy_fx_rate numeric;
 alter table public.assets add column if not exists buy_date date;
 alter table public.assets add column if not exists quantity numeric;
 
+-- 종가 자동 갱신용 티커 (없으면 수동 관리, 입력하면 매일 자동으로 현재가·평가금액이 갱신됩니다)
+alter table public.assets add column if not exists ticker text;
+alter table public.assets add column if not exists ticker_market text not null default 'US';
+
 -- 사용자가 직접 정렬한 순서 (화살표 버튼으로 조정). 기존 행은 created_at 순으로 채워넣습니다.
 alter table public.assets add column if not exists sort_order integer;
 with ranked as (

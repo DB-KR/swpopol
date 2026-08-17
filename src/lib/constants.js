@@ -42,6 +42,17 @@ export function getCurrency(key) {
   return CURRENCIES.find((c) => c.key === key) || CURRENCIES[0];
 }
 
+// 티커 자동 시세 갱신 시, 코스피/코스닥 종목은 Yahoo Finance 조회용으로 .KS/.KQ를 자동으로 붙여줍니다.
+export const TICKER_MARKETS = [
+  { key: "US", label: "해외(미국 등)", suffix: "" },
+  { key: "KOSPI", label: "코스피", suffix: ".KS" },
+  { key: "KOSDAQ", label: "코스닥", suffix: ".KQ" },
+];
+
+export function getTickerMarket(key) {
+  return TICKER_MARKETS.find((m) => m.key === key) || TICKER_MARKETS[0];
+}
+
 export const YEAR_COLORS = ["#0D9488", "#4F46E5", "#E11D48", "#D97706", "#64748B", "#9333EA"];
 
 export function getYearColor(index) {
