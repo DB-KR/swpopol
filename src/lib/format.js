@@ -9,17 +9,12 @@ export function formatMonthLabel(ym) {
   return `${y}.${m}`;
 }
 
+// v는 항상 "만원" 단위로 저장된 값입니다(DB 컨벤션). 화면에는 억/만원으로 뭉뚱그리지 않고,
+// 실제 원 단위 전체 금액을 3자리마다 콤마를 찍어 그대로 보여줍니다.
 export function formatManwon(v) {
   if (v === null || v === undefined || isNaN(v)) return "-";
-  const neg = v < 0;
-  const abs = Math.round(Math.abs(v));
-  const eok = Math.floor(abs / 10000);
-  const man = abs % 10000;
-  let str;
-  if (eok > 0 && man > 0) str = `${eok.toLocaleString("ko-KR")}억 ${man.toLocaleString("ko-KR")}만원`;
-  else if (eok > 0) str = `${eok.toLocaleString("ko-KR")}억원`;
-  else str = `${man.toLocaleString("ko-KR")}만원`;
-  return (neg ? "-" : "") + str;
+  const won = Math.round(v * 10000);
+  return `${won.toLocaleString("ko-KR")}원`;
 }
 
 export function formatPct(v, digits = 1) {

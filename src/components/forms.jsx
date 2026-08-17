@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { CATEGORIES, INCOME_CATEGORIES, EXPENSE_CATEGORIES, CURRENCIES, LIABILITY_CATEGORIES } from "../lib/constants";
-import { currentMonth } from "../lib/format";
+import { currentMonth, formatManwon } from "../lib/format";
 
 export function AssetForm({ initial, onSubmit, onCancel }) {
   const [category, setCategory] = useState(initial?.category || CATEGORIES[0].key);
@@ -342,7 +342,7 @@ export function SnapshotForm({ onSubmit, onCancel, defaultRealEstate, defaultFin
           <input type="number" value={financial} onChange={(e) => setFinancial(e.target.value)} min="0" />
         </label>
       </div>
-      <p className="form-hint">합계 {Math.round(total).toLocaleString("ko-KR")}만원</p>
+      <p className="form-hint">합계 {formatManwon(total)}</p>
       <div className="form-actions">
         <button type="button" className="btn-ghost" onClick={onCancel}>취소</button>
         <button type="submit" className="btn-primary" disabled={saving}>기록 저장</button>
