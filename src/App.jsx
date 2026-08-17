@@ -88,28 +88,38 @@ function Shell({ theme, toggleTheme }) {
       return;
     }
     const t = e.touches[0];
+    if (!t) return;
     // 메뉴가 닫혀있을 땐 왼쪽 가장자리에서 시작한 터치만, 열려있을 땐 어디서든 인식합니다.
     if (!sidebarOpen && t.clientX > EDGE_ZONE_PX) {
       touchStart.current = null;
       return;
     }
-    touchStart.current = { x: t.clientX, y: t.clientY };
+    touchStart.current = { x: t.clientX, y: t.clientY, locked: false };
   }
 
   function handleTouchMove(e) {
     if (!touchStart.current) return;
     const t = e.touches[0];
+    if (!t) return;
     const dx = t.clientX - touchStart.current.x;
     const dy = t.clientY - touchStart.current.y;
-    if (Math.abs(dy) > 40 && Math.abs(dy) > Math.abs(dx)) {
-      // 세로 스크롤로 보이면 스와이프 추적을 그만둡니다.
-      touchStart.current = null;
-      return;
+
+    // 방향을 아직 확정하지 않았다면, 이동량이 일정 수준(10px)을 넘는 순간 딱 한 번만 판단합니다.
+    // 세로 이동이 가로 이동보다 크거나 같으면 스크롤로 보고 이 제스처는 완전히 포기합니다(다시 판단하지 않음).
+    // 이렇게 방향을 "고정"해야, 스크롤 도중 가로로 살짝 밀렸다고 나중에 메뉴가 열리는 오작동을 막을 수 있어요.
+    if (!touchStart.current.locked) {
+      if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return;
+      if (Math.abs(dy) >= Math.abs(dx)) {
+        touchStart.current = null;
+        return;
+      }
+      touchStart.current.locked = true;
     }
-    if (!sidebarOpen && dx > SWIPE_THRESHOLD_PX && Math.abs(dx) > Math.abs(dy) * 1.5) {
+
+    if (!sidebarOpen && dx > SWIPE_THRESHOLD_PX) {
       setSidebarOpen(true);
       touchStart.current = null;
-    } else if (sidebarOpen && dx < -SWIPE_THRESHOLD_PX && Math.abs(dx) > Math.abs(dy) * 1.5) {
+    } else if (sidebarOpen && dx < -SWIPE_THRESHOLD_PX) {
       setSidebarOpen(false);
       touchStart.current = null;
     }

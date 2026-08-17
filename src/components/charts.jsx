@@ -374,7 +374,7 @@ const INDEX_RANGE_OPTIONS = [
 export function SingleIndexChart({ rows, label, color }) {
   const [range, setRange] = React.useState("6m");
 
-  if (!rows || rows.length === 0) {
+  if (!rows || rows.length < 2) {
     return (
       <div className="empty-state">
         <div className="empty-ring"><Globe size={20} /></div>
@@ -454,7 +454,7 @@ function BenchmarkCompareTooltip({ active, payload, label }) {
 // 내 자산 스냅샷(월별)과 지수(월말값)를 같은 시작월 기준 등락률(%)로 정규화해서 비교합니다.
 // indexLabel/indexColor로 S&P500·KOSPI 카드에 재사용합니다.
 export function BenchmarkCompareChart({ data, indexLabel, indexColor }) {
-  if (data.length === 0) {
+  if (data.length < 2) {
     return (
       <div className="empty-state">
         <div className="empty-ring"><Globe size={20} /></div>

@@ -71,6 +71,7 @@ export default function Performance() {
     if (withIndex.length === 0) return [];
     const baseTotal = withIndex[0].total;
     const baseIndex = monthlyIndex[withIndex[0].month];
+    if (!baseIndex) return [];
     return withIndex.map((s) => ({
       month: s.month,
       portfolioPct: baseTotal ? ((s.total - baseTotal) / baseTotal) * 100 : 0,
