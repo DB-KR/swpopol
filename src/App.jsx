@@ -75,19 +75,24 @@ function Shell({ theme, toggleTheme }) {
     });
   }
 
-  // 모바일에서 화면 왼쪽 가장자리를 오른쪽으로 스와이프하면 메뉴가 열리도록 합니다.
+  // 모바일에서 화면 왼쪽 가장자리를 오른쪽으로 스와이프하면 메뉴가 열리고,
+  // 메뉴가 열려있을 때 오른쪽에서 왼쪽으로 스와이프하면 닫히도록 합니다.
   // 데스크톱(860px 초과)에서는 사이드바가 항상 보이므로 굳이 추적하지 않습니다.
   const touchStart = useRef(null);
   const EDGE_ZONE_PX = 50;
   const SWIPE_THRESHOLD_PX = 60;
 
   function handleTouchStart(e) {
-    if (sidebarOpen || window.innerWidth > 860) {
+    if (window.innerWidth > 860) {
       touchStart.current = null;
       return;
     }
     const t = e.touches[0];
-    if (t.clientX > EDGE_ZONE_PX) return;
+    // 메뉴가 닫혀있을 땐 왼쪽 가장자리에서 시작한 터치만, 열려있을 땐 어디서든 인식합니다.
+    if (!sidebarOpen && t.clientX > EDGE_ZONE_PX) {
+      touchStart.current = null;
+      return;
+    }
     touchStart.current = { x: t.clientX, y: t.clientY };
   }
 
@@ -96,11 +101,16 @@ function Shell({ theme, toggleTheme }) {
     const t = e.touches[0];
     const dx = t.clientX - touchStart.current.x;
     const dy = t.clientY - touchStart.current.y;
-    if (dx > SWIPE_THRESHOLD_PX && Math.abs(dx) > Math.abs(dy) * 1.5) {
+    if (Math.abs(dy) > 40 && Math.abs(dy) > Math.abs(dx)) {
+      // 세로 스크롤로 보이면 스와이프 추적을 그만둡니다.
+      touchStart.current = null;
+      return;
+    }
+    if (!sidebarOpen && dx > SWIPE_THRESHOLD_PX && Math.abs(dx) > Math.abs(dy) * 1.5) {
       setSidebarOpen(true);
       touchStart.current = null;
-    } else if (Math.abs(dy) > 40) {
-      // 세로 스크롤로 보이면 스와이프 추적을 그만둡니다.
+    } else if (sidebarOpen && dx < -SWIPE_THRESHOLD_PX && Math.abs(dx) > Math.abs(dy) * 1.5) {
+      setSidebarOpen(false);
       touchStart.current = null;
     }
   }
