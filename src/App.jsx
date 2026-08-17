@@ -79,8 +79,8 @@ function Shell({ theme, toggleTheme }) {
   // 메뉴가 열려있을 때 오른쪽에서 왼쪽으로 스와이프하면 닫히도록 합니다.
   // 데스크톱(860px 초과)에서는 사이드바가 항상 보이므로 굳이 추적하지 않습니다.
   const touchStart = useRef(null);
-  const EDGE_ZONE_PX = 50;
-  const SWIPE_THRESHOLD_PX = 60;
+  const EDGE_ZONE_PX = 70;
+  const SWIPE_THRESHOLD_PX = 80;
 
   function handleTouchStart(e) {
     if (window.innerWidth > 860) {
