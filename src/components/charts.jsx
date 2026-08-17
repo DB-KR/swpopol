@@ -348,35 +348,33 @@ export function CumulativeReturnChart({ data }) {
   );
 }
 
-function MarketIndexTooltip({ active, payload, label }) {
+function SingleIndexTooltip({ active, payload, label }) {
   if (!active || !payload || !payload.length) return null;
+  const p = payload[0];
   return (
     <div className="chart-tt">
       <div className="chart-tt-label">{label}</div>
-      {payload.map((p) => (
-        <div className="chart-tt-row" key={p.dataKey}>
-          <span>{p.dataKey}</span>
-          <span>{formatPct(p.value)}</span>
-        </div>
-      ))}
+      <div className="chart-tt-row">
+        <span>{p.name}</span>
+        <span>{Number(p.value).toLocaleString("ko-KR", { maximumFractionDigits: 1 })}</span>
+      </div>
     </div>
   );
 }
 
-// 서로 단위가 다른 지수(S&P500 포인트, KOSPI 포인트)를 절대값으로 비교하면 의미가 없어서,
-// 구간 첫날 대비 등락률(%)로 정규화해 하나의 축에서 상대 성과를 비교할 수 있게 합니다.
-function normalizeIndexSeries(data) {
-  const firstSP500 = data.find((d) => d.SP500 != null)?.SP500;
-  const firstKOSPI = data.find((d) => d.KOSPI != null)?.KOSPI;
-  return data.map((d) => ({
-    date: d.date,
-    SP500: d.SP500 != null && firstSP500 ? ((d.SP500 - firstSP500) / firstSP500) * 100 : null,
-    KOSPI: d.KOSPI != null && firstKOSPI ? ((d.KOSPI - firstKOSPI) / firstKOSPI) * 100 : null,
-  }));
-}
+const INDEX_RANGE_OPTIONS = [
+  { key: "1m", label: "1개월", days: 30 },
+  { key: "6m", label: "6개월", days: 182 },
+  { key: "1y", label: "1년", days: 365 },
+  { key: "5y", label: "5년", days: 1825 },
+];
 
-export function MarketIndexChart({ data }) {
-  if (data.length === 0) {
+// 지수 하나를 자체 축(원래 포인트값)으로 그리고, 기간 버튼으로 보여줄 구간을 좁힐 수 있게 합니다.
+// 5년치 일별 데이터를 한 번에 다 그리면 선이 뭉개져서, 기본값은 6개월로 좁혀서 보여줍니다.
+export function SingleIndexChart({ rows, label, color }) {
+  const [range, setRange] = React.useState("6m");
+
+  if (!rows || rows.length === 0) {
     return (
       <div className="empty-state">
         <div className="empty-ring"><Globe size={20} /></div>
@@ -384,29 +382,54 @@ export function MarketIndexChart({ data }) {
       </div>
     );
   }
-  const normalized = normalizeIndexSeries(data);
+
+  const selected = INDEX_RANGE_OPTIONS.find((r) => r.key === range) || INDEX_RANGE_OPTIONS[1];
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - selected.days);
+  const cutoffStr = cutoff.toISOString().slice(0, 10);
+  const filteredRows = rows.filter((r) => r.date >= cutoffStr);
+  const visibleRows = filteredRows.length > 1 ? filteredRows : rows;
+  const chartData = visibleRows.map((r) => ({ date: r.date, value: r.value }));
+  const isLongRange = selected.days > 400;
+  const latest = rows[rows.length - 1];
+
   return (
     <>
-      <div className="gauge-legend" style={{ marginBottom: 8 }}>
-        <span className="gauge-legend-item">
-          <span className="gauge-legend-dot" style={{ background: "var(--stamp-red)" }} />
-          S&P500
-        </span>
-        <span className="gauge-legend-item">
-          <span className="gauge-legend-dot" style={{ background: "var(--ink)" }} />
-          KOSPI
-        </span>
-        <span className="gauge-legend-item muted">첫날(구간 시작일) 대비 등락률</span>
+      <div className="chart-range-row">
+        <span className="pill">{label} {latest.value.toLocaleString("ko-KR", { maximumFractionDigits: 1 })} <span className="muted">({latest.date})</span></span>
+        <div className="tab-row">
+          {INDEX_RANGE_OPTIONS.map((opt) => (
+            <button
+              key={opt.key}
+              className={`tab-btn ${range === opt.key ? "active" : ""}`}
+              onClick={() => setRange(opt.key)}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
       </div>
-      <ResponsiveContainer width="100%" height={240}>
-        <LineChart data={normalized} margin={{ top: 10, right: 16, left: 0, bottom: 0 }}>
+      <ResponsiveContainer width="100%" height={220}>
+        <LineChart data={chartData} margin={{ top: 10, right: 16, left: 0, bottom: 0 }}>
           <CartesianGrid strokeDasharray="2 4" stroke="var(--line)" vertical={false} />
-          <XAxis dataKey="date" tick={{ fontFamily: "IBM Plex Mono", fontSize: 10, fill: "var(--ink-soft)" }} axisLine={{ stroke: "var(--line)" }} tickLine={false} />
-          <YAxis tickFormatter={(v) => formatPct(v, 0)} tick={{ fontFamily: "IBM Plex Mono", fontSize: 10, fill: "var(--ink-soft)" }} axisLine={false} tickLine={false} width={48} />
-          <ReferenceLine y={0} stroke="var(--line)" />
-          <Tooltip content={<MarketIndexTooltip />} />
-          <Line type="monotone" dataKey="SP500" stroke="var(--stamp-red)" strokeWidth={2} dot={false} connectNulls animationDuration={700} />
-          <Line type="monotone" dataKey="KOSPI" stroke="var(--ink)" strokeWidth={2} dot={false} connectNulls animationDuration={700} />
+          <XAxis
+            dataKey="date"
+            tickFormatter={(d) => (isLongRange ? d.slice(0, 7) : d.slice(5))}
+            minTickGap={28}
+            tick={{ fontFamily: "IBM Plex Mono", fontSize: 10, fill: "var(--ink-soft)" }}
+            axisLine={{ stroke: "var(--line)" }}
+            tickLine={false}
+          />
+          <YAxis
+            domain={["auto", "auto"]}
+            tickFormatter={(v) => v.toLocaleString("ko-KR")}
+            tick={{ fontFamily: "IBM Plex Mono", fontSize: 10, fill: "var(--ink-soft)" }}
+            axisLine={false}
+            tickLine={false}
+            width={56}
+          />
+          <Tooltip content={<SingleIndexTooltip />} />
+          <Line type="monotone" dataKey="value" name={label} stroke={color} strokeWidth={2} dot={false} animationDuration={500} />
         </LineChart>
       </ResponsiveContainer>
     </>

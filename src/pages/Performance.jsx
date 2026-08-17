@@ -4,7 +4,7 @@ import { useData } from "../context/DataContext";
 import { supabase } from "../lib/supabase";
 import { formatManwon, formatPct, computeAnnualReport } from "../lib/format";
 import { useFxRates } from "../lib/useFxRates";
-import { CumulativeReturnChart, MarketIndexChart, BenchmarkCompareChart } from "../components/charts";
+import { CumulativeReturnChart, SingleIndexChart, BenchmarkCompareChart } from "../components/charts";
 import PageSkeleton from "../components/PageSkeleton";
 
 export default function Performance() {
@@ -51,15 +51,10 @@ export default function Performance() {
   });
   const hasContribData = foreignWithQty.length > 0;
 
-  // 시장지수 데이터를 날짜별로 피벗 (recharts용 {date, SP500, KOSPI} 형태)
-  const indexByDate = {};
-  indices.forEach((row) => {
-    if (!indexByDate[row.date]) indexByDate[row.date] = { date: row.date.slice(5) };
-    indexByDate[row.date][row.symbol] = Number(row.value);
-  });
-  const indexData = Object.values(indexByDate);
-  const latestSP500 = [...indices].reverse().find((r) => r.symbol === "SP500");
-  const latestKOSPI = [...indices].reverse().find((r) => r.symbol === "KOSPI");
+  // 심볼별 원본 시계열 ({date, value} 오름차순) — 지수별로 카드를 따로 그리고
+  // 기간 버튼으로 구간을 좁혀 보여주기 위해 SingleIndexChart에 그대로 넘깁니다.
+  const sp500Rows = indices.filter((r) => r.symbol === "SP500").map((r) => ({ date: r.date, value: Number(r.value) }));
+  const kospiRows = indices.filter((r) => r.symbol === "KOSPI").map((r) => ({ date: r.date, value: Number(r.value) }));
 
   // 지수를 "그 달의 최신값"으로 월별 집계 (indices가 date 오름차순이라 덮어쓰면 마지막 값이 남음)
   const monthlyIndexBySymbol = {};
@@ -193,20 +188,29 @@ export default function Performance() {
         )}
       </div>
 
-      <div className="card">
-        <div className="card-head">
-          <h2>시장지수 비교</h2>
-          <span className="card-sub">매일 자동 수집 (S&P500 · KOSPI)</span>
+      <div className="grid-2">
+        <div className="card">
+          <div className="card-head">
+            <h2>S&P500 지수</h2>
+            <span className="card-sub">매일 자동 수집</span>
+          </div>
+          {indicesLoading ? (
+            <div className="empty-state"><div className="empty-ring" /><p>불러오는 중…</p></div>
+          ) : (
+            <SingleIndexChart rows={sp500Rows} label="S&P500" color="var(--stamp-red)" />
+          )}
         </div>
-        <div className="hero-pills" style={{ marginBottom: 12 }}>
-          {latestSP500 && <span className="pill">S&P500 {latestSP500.value.toLocaleString("ko-KR", { maximumFractionDigits: 1 })} ({latestSP500.date})</span>}
-          {latestKOSPI && <span className="pill">KOSPI {latestKOSPI.value.toLocaleString("ko-KR", { maximumFractionDigits: 1 })} ({latestKOSPI.date})</span>}
+        <div className="card">
+          <div className="card-head">
+            <h2>KOSPI 지수</h2>
+            <span className="card-sub">매일 자동 수집</span>
+          </div>
+          {indicesLoading ? (
+            <div className="empty-state"><div className="empty-ring" /><p>불러오는 중…</p></div>
+          ) : (
+            <SingleIndexChart rows={kospiRows} label="KOSPI" color="var(--ink)" />
+          )}
         </div>
-        {indicesLoading ? (
-          <div className="empty-state"><div className="empty-ring" /><p>불러오는 중…</p></div>
-        ) : (
-          <MarketIndexChart data={indexData} />
-        )}
       </div>
     </div>
   );
